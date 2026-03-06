@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personal Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #1E1E1A;
+      --bg-card: #232320;
+      --border: #2a2a24;
+      --bg-header: #191916;
+      --accent: #7C9E8A;
+      --accent-secondary: #A8C5BC;
+      --text: #E8F0EC;
+      --text-muted: #A8C5BC;
+      --text-faded: #555;
+      --user-bubble-bg: #243028;
+      --user-bubble-border: #7C9E8A;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 300;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    body {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      grid-template-columns: 25% 45% 30%;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── Header ──────────────────────────────────── */
+
+    .header {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      background: var(--bg-header);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-greeting {
+      font-weight: 300;
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--text);
+    }
+
+    .header-date {
+      font-weight: 400;
+      font-size: 0.58rem;
+      color: var(--text-faded);
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+    }
+
+    /* ── Section Labels ──────────────────────────── */
+
+    .section-label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    /* ── Left Column: Agenda ─────────────────────── */
+
+    .col-agenda {
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    .agenda-date {
+      font-weight: 500;
+      font-size: 1.5rem;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .event-card {
+      border-left: 2px solid var(--accent);
+      background: var(--bg-card);
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      border-top: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      border-radius: 0 2px 2px 0;
+    }
+
+    .event-time {
+      font-size: 0.58rem;
+      font-weight: 500;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      margin-bottom: 2px;
+    }
+
+    .event-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .event-location {
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--text-faded);
+      margin-top: 2px;
+    }
+
+    .agenda-empty {
+      font-weight: 300;
+      color: var(--text-faded);
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    .agenda-loading {
+      color: var(--text-faded);
+      font-size: 13px;
+      font-weight: 300;
+    }
+
+    .agenda-section-divider {
+      font-size: 0.58rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--text-faded);
+      margin-top: 20px;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Centre Column: Inbox ────────────────────── */
+
+    .col-inbox {
+      background: #242421;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .col-inbox-header {
+      padding: 16px 16px 0;
+    }
+
+    .inbox-count {
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--text-faded);
+      margin-bottom: 12px;
+    }
+
+    .inbox-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 16px 16px;
+    }
+
+    .email-card {
+      padding: 16px 0;
+      margin-bottom: 4px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .email-card-inner {
+      padding: 0;
+    }
+
+    .email-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 2px;
+    }
+
+    .email-sender {
+      font-weight: 500;
+      font-size: 14px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .email-unread-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .email-time {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--text-faded);
+      white-space: nowrap;
+    }
+
+    .email-subject {
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .email-preview {
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--text-faded);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-height: 1.5;
+    }
+
+    .email-expanded {
+      display: none;
+      margin-top: 12px;
+      padding: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+    }
+
+    .email-expanded.visible { display: block; }
+
+    .email-expanded-body {
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.75;
+      white-space: pre-wrap;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+
+    .inbox-empty {
+      font-weight: 300;
+      color: var(--text-faded);
+      font-size: 14px;
+      padding: 8px 0;
+    }
+
+    .inbox-loading {
+      color: var(--text-faded);
+      font-size: 13px;
+      font-weight: 300;
+      padding: 8px 0;
+    }
+
+    /* ── Right Column: Chat ──────────────────────── */
+
+    .col-chat {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .col-chat-header {
+      padding: 16px 16px 12px;
+    }
+
+    .chat-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .btn {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      padding: 8px 16px;
+      border: 1px solid var(--accent);
+      border-radius: 20px;
+      background: transparent;
+      color: var(--accent);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn:hover { background: var(--accent); color: var(--bg); }
+
+    .btn-briefing {
+      width: 100%;
+      display: block;
+      background: #7C9E8A33;
+      border-color: transparent;
+    }
+
+    .btn-briefing:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+    .btn-send {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 20px;
+      padding: 10px 18px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-send:hover { background: var(--accent-secondary); }
+
+    .btn-small {
+      font-size: 0.62rem;
+      padding: 6px 12px;
+    }
+
+    .btn-draft {
+      background: var(--accent);
+      color: var(--bg);
+      border-color: var(--accent);
+    }
+
+    .btn-draft:hover { background: var(--accent-secondary); }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 16px 16px;
+    }
+
+    .chat-empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-faded);
+      font-weight: 300;
+      font-size: 13px;
+      text-align: center;
+      padding: 24px;
+      line-height: 1.7;
+    }
+
+    .message {
+      max-width: 88%;
+      margin-bottom: 12px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user { margin-left: auto; }
+
+    .message-label {
+      font-size: 0.54rem;
+      font-weight: 500;
+      color: var(--text-faded);
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+    }
+
+    .message.user .message-label { text-align: right; }
+
+    .message-bubble {
+      padding: 10px 14px;
+      border-radius: 2px;
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.65;
+    }
+
+    .message.user .message-bubble {
+      background: var(--user-bubble-bg);
+      border: 1px solid var(--user-bubble-border);
+      color: var(--text);
+    }
+
+    .message.assistant .message-bubble {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .message.assistant .message-bubble p { margin-bottom: 8px; }
+    .message.assistant .message-bubble p:last-child { margin-bottom: 0; }
+    .message.assistant .message-bubble strong { color: var(--accent); font-weight: 500; }
+    .message.assistant .message-bubble ul,
+    .message.assistant .message-bubble ol { padding-left: 18px; margin-bottom: 8px; }
+    .message.assistant .message-bubble li { margin-bottom: 3px; }
+    .message.assistant .message-bubble code {
+      background: var(--bg);
+      padding: 1px 5px;
+      border-radius: 0;
+      font-size: 12px;
+    }
+    .message.assistant .message-bubble pre {
+      background: var(--bg);
+      padding: 10px;
+      border-radius: 0;
+      overflow-x: auto;
+      margin-bottom: 8px;
+    }
+
+    .typing-indicator {
+      display: none;
+      padding: 6px 16px;
+      color: var(--text-faded);
+      font-weight: 300;
+      font-size: 12px;
+    }
+
+    .typing-indicator.visible { display: block; }
+
+    /* ── Chat Input ──────────────────────────────── */
+
+    .chat-input-bar {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .chat-input-bar textarea {
+      flex: 1;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 300;
+      font-size: 13px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: var(--bg-card);
+      color: var(--text);
+      resize: none;
+      outline: none;
+      line-height: 1.5;
+      max-height: 100px;
+    }
+
+    .chat-input-bar textarea::placeholder { color: var(--text-faded); }
+    .chat-input-bar textarea:focus { border-color: var(--accent); }
+
+    /* ── Scrollbar ────────────────────────────────── */
+
+    /* ── Skeleton Shimmer Loader ─────────────────── */
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .skeleton {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .skeleton-bar {
+      height: 12px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, var(--border) 25%, #3a3a34 50%, var(--border) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s ease-in-out infinite;
+    }
+
+    .skeleton-bar.w-60 { width: 60%; }
+    .skeleton-bar.w-80 { width: 80%; }
+    .skeleton-bar.w-40 { width: 40%; }
+    .skeleton-bar.w-full { width: 100%; }
+    .skeleton-bar.h-8 { height: 8px; }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 0; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-faded); }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-greeting" id="greeting">Good morning, Milette</div>
+    <div class="header-date" id="headerDate"></div>
+  </header>
+
+  <!-- Left: Agenda -->
+  <div class="col-agenda">
+    <div class="agenda-date" id="agendaDate"></div>
+    <div class="section-label">Today</div>
+    <div id="agendaList">
+      <div class="skeleton">
+        <div class="skeleton-bar w-40"></div>
+        <div class="skeleton-bar w-80"></div>
+        <div class="skeleton-bar w-60"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Centre: Inbox -->
+  <div class="col-inbox">
+    <div class="col-inbox-header">
+      <div class="section-label">Inbox</div>
+      <div class="inbox-count" id="inboxSubheading">Loading...</div>
+    </div>
+    <div class="inbox-list" id="inboxList">
+      <div class="skeleton">
+        <div class="skeleton-bar w-60"></div>
+        <div class="skeleton-bar w-full"></div>
+        <div class="skeleton-bar w-80 h-8"></div>
+        <div style="height: 8px;"></div>
+        <div class="skeleton-bar w-40"></div>
+        <div class="skeleton-bar w-full"></div>
+        <div class="skeleton-bar w-60 h-8"></div>
+        <div style="height: 8px;"></div>
+        <div class="skeleton-bar w-60"></div>
+        <div class="skeleton-bar w-80"></div>
+        <div class="skeleton-bar w-40 h-8"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Chat -->
+  <div class="col-chat">
+    <div class="col-chat-header">
+      <div class="section-label">Ask your PA</div>
+      <button class="btn btn-briefing" onclick="morningBriefing()">Morning Briefing</button>
+      <div class="chat-actions">
+        <button class="btn btn-small" onclick="refreshData()">&#8635; Refresh</button>
+        <button class="btn btn-small" onclick="resetConversation()">+ New Chat</button>
+      </div>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-empty">
+        Your assistant is ready.<br />Ask anything, or start with a Morning Briefing.
+      </div>
+    </div>
+    <div class="typing-indicator" id="typingIndicator">Thinking...</div>
+    <div class="chat-input-bar">
+      <textarea id="chatInput" rows="1" placeholder="Ask your assistant..." onkeydown="handleInputKey(event)"></textarea>
+      <button class="btn-send" onclick="sendFromInput()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    // ── State ──────────────────────────────────────
+    let emails = [];
+    let calendarEvents = [];
+    let expandedEmail = null;
+    let chatMessages = [];
+    let isSending = false;
+
+    // ── Init ───────────────────────────────────────
+    const now = new Date();
+    const hour = now.getHours();
+    const greetingText = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    document.getElementById('greeting').textContent = greetingText + ', Milette';
+
+    document.getElementById('headerDate').textContent = now.toLocaleDateString('en-GB', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+    });
+
+    document.getElementById('agendaDate').textContent = now.toLocaleDateString('en-GB', {
+      day: 'numeric', month: 'long'
+    });
+
+    marked.setOptions({ breaks: true, gfm: true });
+    refreshData();
+
+    // ── Data Fetching ──────────────────────────────
+    function refreshData() {
+      fetchEmails();
+      fetchCalendar();
+    }
+
+    async function fetchEmails() {
+      const listEl = document.getElementById('inboxList');
+      const subEl = document.getElementById('inboxSubheading');
+      listEl.innerHTML = '<div class="skeleton"><div class="skeleton-bar w-60"></div><div class="skeleton-bar w-full"></div><div class="skeleton-bar w-80 h-8"></div><div style="height:8px"></div><div class="skeleton-bar w-40"></div><div class="skeleton-bar w-full"></div><div class="skeleton-bar w-60 h-8"></div></div>';
+      subEl.textContent = 'Loading...';
+      try {
+        const res = await fetch('/api/emails');
+        const data = await res.json();
+        emails = data.emails || [];
+        subEl.textContent = emails.length === 0
+          ? 'All caught up'
+          : `${emails.length} unread`;
+        renderEmails();
+      } catch (err) {
+        listEl.innerHTML = '<div class="inbox-empty">Could not load emails. Try the chat.</div>';
+        subEl.textContent = 'Error';
+      }
+    }
+
+    async function fetchCalendar() {
+      const listEl = document.getElementById('agendaList');
+      listEl.innerHTML = '<div class="skeleton"><div class="skeleton-bar w-40"></div><div class="skeleton-bar w-80"></div><div class="skeleton-bar w-60"></div></div>';
+      try {
+        const res = await fetch('/api/calendar');
+        const data = await res.json();
+        calendarEvents = data.events || [];
+        renderAgenda();
+      } catch (err) {
+        listEl.innerHTML = '<div class="agenda-empty">Could not load calendar.</div>';
+      }
+    }
+
+    // ── Render: Agenda ─────────────────────────────
+    function renderAgenda() {
+      const listEl = document.getElementById('agendaList');
+
+      if (calendarEvents.length === 0) {
+        listEl.innerHTML = '<div class="agenda-empty">A clear day.</div>';
+        return;
+      }
+
+      const today = new Date().toISOString().split('T')[0];
+      const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+
+      const todayEvents = calendarEvents.filter(e => e.start && e.start.startsWith(today));
+      const tomorrowEvents = calendarEvents.filter(e => e.start && e.start.startsWith(tomorrow));
+
+      let html = '';
+
+      if (todayEvents.length > 0) {
+        html += todayEvents.map(e => renderEventCard(e)).join('');
+      } else {
+        html += '<div class="agenda-empty">A clear day.</div>';
+      }
+
+      if (tomorrowEvents.length > 0) {
+        html += '<div class="agenda-section-divider">Tomorrow</div>';
+        html += tomorrowEvents.map(e => renderEventCard(e)).join('');
+      }
+
+      listEl.innerHTML = html;
+    }
+
+    function renderEventCard(e) {
+      const start = new Date(e.start);
+      const end = e.end ? new Date(e.end) : null;
+      const timeStr = start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      const endStr = end ? end.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '';
+      const location = e.location ? `<div class="event-location">${esc(e.location)}</div>` : '';
+
+      return `
+        <div class="event-card">
+          <div class="event-time">${timeStr}${endStr ? ' \u2013 ' + endStr : ''}</div>
+          <div class="event-title">${esc(e.title)}</div>
+          ${location}
+        </div>
+      `;
+    }
+
+    // ── Render: Inbox ──────────────────────────────
+    function renderEmails() {
+      const listEl = document.getElementById('inboxList');
+
+      if (emails.length === 0) {
+        listEl.innerHTML = '<div class="inbox-empty">No unread emails.</div>';
+        return;
+      }
+
+      listEl.innerHTML = emails.map((email, i) => {
+        const isExpanded = expandedEmail === i;
+        const unreadDot = !email.isRead ? '<span class="email-unread-dot"></span>' : '';
+
+        return `
+          <div class="email-card" onclick="toggleEmail(${i})">
+            <div class="email-card-inner">
+              <div class="email-header-row">
+                <div class="email-sender">${unreadDot}${esc(email.sender)}</div>
+                <div class="email-time">${formatTime(email.time)}</div>
+              </div>
+              <div class="email-subject">${esc(email.subject)}</div>
+              <div class="email-preview">${esc(email.preview || '')}</div>
+            </div>
+            <div class="email-expanded ${isExpanded ? 'visible' : ''}">
+              <div class="email-expanded-body">${esc(email.preview || '(No preview available \u2014 ask your PA to read this email in full.)')}</div>
+              <div>
+                <button class="btn btn-draft btn-small" onclick="event.stopPropagation(); draftReply(${i})">Draft Reply</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleEmail(index) {
+      expandedEmail = expandedEmail === index ? null : index;
+      renderEmails();
+    }
+
+    function draftReply(index) {
+      const email = emails[index];
+      sendMessage(`Draft a reply to the email from ${email.sender} with subject "${email.subject}".`);
+    }
+
+    // ── Chat ───────────────────────────────────────
+    function morningBriefing() {
+      sendMessage('Give me my morning briefing.');
+    }
+
+    async function resetConversation() {
+      try {
+        await fetch('/api/reset', { method: 'POST' });
+      } catch (e) { /* ignore */ }
+      chatMessages = [];
+      document.getElementById('chatMessages').innerHTML = `
+        <div class="chat-empty">
+          Your assistant is ready.<br />Ask anything, or start with a Morning Briefing.
+        </div>
+      `;
+    }
+
+    function handleInputKey(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendFromInput();
+      }
+    }
+
+    function sendFromInput() {
+      const input = document.getElementById('chatInput');
+      const msg = input.value.trim();
+      if (!msg) return;
+      input.value = '';
+      input.style.height = 'auto';
+      sendMessage(msg);
+    }
+
+    async function sendMessage(text) {
+      if (isSending) return;
+      isSending = true;
+
+      const container = document.getElementById('chatMessages');
+      if (container.querySelector('.chat-empty')) {
+        container.innerHTML = '';
+      }
+
+      appendMessage('user', text);
+      document.getElementById('typingIndicator').classList.add('visible');
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text }),
+        });
+        const data = await res.json();
+
+        if (data.error) {
+          appendMessage('assistant', `Something went wrong: ${data.error}`);
+        } else {
+          appendMessage('assistant', data.response);
+        }
+      } catch (err) {
+        appendMessage('assistant', `Connection error: ${err.message}`);
+      } finally {
+        document.getElementById('typingIndicator').classList.remove('visible');
+        isSending = false;
+      }
+    }
+
+    function appendMessage(role, content) {
+      chatMessages.push({ role, content });
+      const container = document.getElementById('chatMessages');
+      const div = document.createElement('div');
+      div.className = `message ${role}`;
+
+      const label = document.createElement('div');
+      label.className = 'message-label';
+      label.textContent = role === 'user' ? 'You' : 'Assistant';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'message-bubble';
+
+      if (role === 'assistant') {
+        bubble.innerHTML = marked.parse(content);
+      } else {
+        bubble.textContent = content;
+      }
+
+      div.appendChild(label);
+      div.appendChild(bubble);
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // ── Auto-resize textarea ───────────────────────
+    const textarea = document.getElementById('chatInput');
+    textarea.addEventListener('input', () => {
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 100) + 'px';
+    });
+
+    // ── Helpers ────────────────────────────────────
+    function esc(str) {
+      const d = document.createElement('div');
+      d.textContent = str || '';
+      return d.innerHTML;
+    }
+
+    function formatTime(isoStr) {
+      if (!isoStr) return '';
+      const d = new Date(isoStr);
+      const today = new Date();
+      if (d.toDateString() === today.toDateString()) {
+        return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      }
+      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    }
+  </script>
+</body>
+</html>
