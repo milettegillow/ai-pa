@@ -3,6 +3,8 @@ import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { query } from '@anthropic-ai/claude-agent-sdk';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import 'dotenv/config';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -18,10 +20,87 @@ const systemPrompt = readFileSync(join(__dirname, 'SYSTEM_PROMPT.md'), 'utf-8');
 // Load MCP server config from .mcp.json
 const mcpConfig = JSON.parse(readFileSync(join(__dirname, '.mcp.json'), 'utf-8'));
 
-// Chat session ID — used to resume conversation across requests
+// ── Direct MCP Client ────────────────────────────────────────────────────────
+
+let mcpClient = null;
+let mcpConnecting = false;
+
+async function getMcpClient() {
+  if (mcpClient) return mcpClient;
+  if (mcpConnecting) {
+    // Wait for in-flight connection
+    while (mcpConnecting) await new Promise(r => setTimeout(r, 100));
+    return mcpClient;
+  }
+
+  mcpConnecting = true;
+  try {
+    const transport = new StdioClientTransport({
+      command: 'npx',
+      args: ['-y', '@softeria/ms-365-mcp-server', '--org-mode', '--preset', 'mail,calendar'],
+      stderr: 'inherit',
+    });
+
+    const client = new Client({ name: 'ai-pa', version: '1.0.0' });
+
+    transport.onclose = () => {
+      console.log('[MCP] Transport closed, will reconnect on next request');
+      mcpClient = null;
+    };
+
+    await client.connect(transport);
+    console.log('[MCP] Connected to ms365 MCP server');
+
+    // List available tools for debugging
+    const { tools } = await client.listTools();
+    console.log(`[MCP] ${tools.length} tools available: ${tools.map(t => t.name).join(', ')}`);
+
+    mcpClient = client;
+    return client;
+  } catch (err) {
+    console.error('[MCP] Failed to connect:', err.message);
+    throw err;
+  } finally {
+    mcpConnecting = false;
+  }
+}
+
+async function callTool(name, args = {}) {
+  const client = await getMcpClient();
+  try {
+    const result = await client.callTool({ name, arguments: args });
+    return result;
+  } catch (err) {
+    console.error(`[MCP] ${name} failed:`, err.message);
+    // Reset client on error so it reconnects
+    mcpClient = null;
+    throw err;
+  }
+}
+
+// ── In-Memory Cache ──────────────────────────────────────────────────────────
+
+const cache = {};
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function getCached(key) {
+  const entry = cache[key];
+  if (entry && Date.now() - entry.time < CACHE_TTL) {
+    console.log(`[Cache] HIT for ${key} (age: ${((Date.now() - entry.time) / 1000).toFixed(0)}s)`);
+    return entry.data;
+  }
+  return null;
+}
+
+function setCache(key, data) {
+  if (Array.isArray(data) && data.length === 0) return;
+  cache[key] = { data, time: Date.now() };
+}
+
+// ── Chat (Claude Agent SDK) ──────────────────────────────────────────────────
+
 let chatSessionId = null;
 
-// Run a query through the Claude Agent SDK
 async function runQuery(prompt, resumeSessionId = null) {
   let result = '';
   let sessionId = null;
@@ -29,9 +108,6 @@ async function runQuery(prompt, resumeSessionId = null) {
   const options = {
     systemPrompt,
     mcpServers: mcpConfig.mcpServers,
-    // Disable ALL built-in tools — only MCP tools should be available.
-    // `tools: []` passes --tools "" which disables built-in tools (Bash, Read, etc.)
-    // while still allowing MCP tools from --mcp-config.
     tools: [],
     permissionMode: 'bypassPermissions',
     allowDangerouslySkipPermissions: true,
@@ -46,10 +122,6 @@ async function runQuery(prompt, resumeSessionId = null) {
   console.log(`\n[runQuery] ─────────────────────────────────────`);
   console.log(`[runQuery] Prompt: "${prompt.slice(0, 120)}${prompt.length > 120 ? '...' : ''}"`);
   console.log(`[runQuery] Session: ${resumeSessionId || 'new'}`);
-  console.log(`[runQuery] MCP servers: ${JSON.stringify(Object.keys(mcpConfig.mcpServers))}`);
-  console.log(`[runQuery] MCP config: ${JSON.stringify(mcpConfig.mcpServers)}`);
-  console.log(`[runQuery] Built-in tools: DISABLED (tools: [])`);
-  console.log(`[runQuery] Starting query at ${new Date().toISOString()}...`);
 
   let messageCount = 0;
   try {
@@ -62,59 +134,24 @@ async function runQuery(prompt, resumeSessionId = null) {
         console.log(`[runQuery] #${messageCount} [${elapsed}s] Session init: ${sessionId}`);
       } else if ('result' in message) {
         result = message.result;
-        console.log(`[runQuery] #${messageCount} [${elapsed}s] RESULT (${result.length} chars):`);
-        console.log(`  "${result.slice(0, 500)}${result.length > 500 ? '...' : ''}"`);
-      } else {
-        // Log EVERY field on the message for debugging
-        const keys = Object.keys(message);
-        const msgType = message.type || 'unknown';
-        const msgSubtype = message.subtype || '';
-        const toolName = message.tool_name || message.name || '';
-        const toolInput = message.tool_input || message.input || '';
-
-        let logLine = `[runQuery] #${messageCount} [${elapsed}s] type=${msgType}`;
-        if (msgSubtype) logLine += ` subtype=${msgSubtype}`;
-        if (toolName) logLine += ` tool=${toolName}`;
-        logLine += ` keys=[${keys.join(',')}]`;
-        console.log(logLine);
-
-        // Log tool inputs/outputs for debugging MCP calls
-        if (toolInput) {
-          console.log(`  Input: ${JSON.stringify(toolInput).slice(0, 500)}`);
-        }
-        if (message.content) {
-          const content = typeof message.content === 'string'
-            ? message.content
-            : JSON.stringify(message.content);
-          console.log(`  Content: ${content.slice(0, 500)}`);
-        }
-        // Log any error fields
-        if (message.error) {
-          console.log(`  ERROR: ${JSON.stringify(message.error)}`);
-        }
+        console.log(`[runQuery] #${messageCount} [${elapsed}s] RESULT (${result.length} chars)`);
       }
     }
   } catch (queryErr) {
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.error(`[runQuery] QUERY THREW after ${elapsed}s and ${messageCount} messages:`);
-    console.error(`  Name: ${queryErr.name}`);
-    console.error(`  Message: ${queryErr.message}`);
-    console.error(`  Stack: ${queryErr.stack}`);
+    console.error(`[runQuery] QUERY THREW after ${elapsed}s: ${queryErr.message}`);
     throw queryErr;
   }
 
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-  console.log(`[runQuery] Done in ${elapsed}s. Messages: ${messageCount}, Result: ${result.length} chars`);
-  if (result.length === 0) {
-    console.log(`[runQuery] WARNING: Empty result! The agent may have failed to produce output.`);
-  }
+  console.log(`[runQuery] Done in ${elapsed}s. Result: ${result.length} chars`);
   console.log(`[runQuery] ─────────────────────────────────────\n`);
   return { result, sessionId };
 }
 
 // ── Routes ──────────────────────────────────────────────────────────────────
 
-// Chat endpoint — resumes the same session for conversation continuity
+// Chat endpoint — uses Claude Agent SDK with MCP access
 app.post('/api/chat', async (req, res) => {
   try {
     const { message } = req.body;
@@ -130,223 +167,143 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-// Reset conversation — clears session so next chat starts fresh
 app.post('/api/reset', (_req, res) => {
   chatSessionId = null;
   res.json({ ok: true });
 });
 
-// Sanitise a string so it's valid for JSON.parse — fix smart quotes, control chars, etc.
-function sanitiseForJson(str) {
-  return str
-    // Smart/curly double quotes → escaped straight quotes (bare " would break JSON strings)
-    .replace(/[\u201C\u201D\u201E\u201F\u2033\u2036]/g, '\\"')
-    // Smart/curly single quotes → straight
-    .replace(/[\u2018\u2019\u201A\u201B\u2032\u2035]/g, "'")
-    // En/em dashes → hyphen
-    .replace(/[\u2013\u2014]/g, '-')
-    // Non-breaking space → regular space
-    .replace(/\u00A0/g, ' ')
-    // Ellipsis character → three dots
-    .replace(/\u2026/g, '...')
-    // Remove BOM
-    .replace(/\uFEFF/g, '')
-    // Remove zero-width chars
-    .replace(/[\u200B\u200C\u200D]/g, '')
-    // Replace literal \r\n inside JSON string values with \\n
-    .replace(/\r\n/g, '\\n')
-    .replace(/\r/g, '\\n')
-    // Remove other ASCII control chars (except \n and \t which JSON allows escaped)
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
-}
-
-// Parse a JSON array from a string that may contain markdown fences or other text
-function parseJsonArray(str) {
-  if (!str || str.length === 0) return null;
-
-  // Try parsing with increasingly aggressive cleanup
-  for (const input of [str, sanitiseForJson(str)]) {
-    // 1. Try parsing the entire string directly
-    try {
-      const parsed = JSON.parse(input);
-      if (Array.isArray(parsed)) return parsed;
-    } catch (e) {
-      console.log(`[parseJsonArray] Direct parse failed: ${e.message}`);
-    }
-
-    // 2. Strip markdown fences and try again
-    const fenceStripped = input.replace(/```(?:json)?\s*/g, '').replace(/```\s*/g, '').trim();
-    try {
-      const parsed = JSON.parse(fenceStripped);
-      if (Array.isArray(parsed)) return parsed;
-    } catch (e) {
-      console.log(`[parseJsonArray] Fence-stripped parse failed: ${e.message}`);
-    }
-
-    // 3. Find the outermost [...] using bracket counting
-    const start = input.indexOf('[');
-    if (start === -1) continue;
-    let depth = 0;
-    for (let i = start; i < input.length; i++) {
-      if (input[i] === '[') depth++;
-      else if (input[i] === ']') depth--;
-      if (depth === 0) {
-        const slice = input.slice(start, i + 1);
-        try {
-          return JSON.parse(slice);
-        } catch (e) {
-          console.log(`[parseJsonArray] Bracket-extracted parse failed: ${e.message}`);
-          // Show the problematic area around the error position
-          const posMatch = e.message.match(/position (\d+)/);
-          if (posMatch) {
-            const pos = parseInt(posMatch[1]);
-            console.log(`[parseJsonArray] Context around error: ...${slice.slice(Math.max(0, pos - 40), pos + 40)}...`);
-          }
-        }
-        break;
-      }
-    }
-  }
-
-  return null;
-}
-
-// Parse pipe-delimited email lines into objects
-function parsePipeEmails(str) {
-  if (!str || str.length === 0) return null;
-  const lines = str.split('\n').map(l => l.trim()).filter(l => l && l.includes('|'));
-  if (lines.length === 0) return null;
-
-  const emails = [];
-  for (const line of lines) {
-    const parts = line.split('|');
-    if (parts.length < 6) continue;
-    emails.push({
-      id: parts[0],
-      sender: parts[1],
-      senderEmail: parts[2],
-      subject: parts[3],
-      preview: parts[4],
-      time: parts[5],
-      isRead: parts[6] === 'true',
-    });
-  }
-  return emails.length > 0 ? emails : null;
-}
-
-// Fetch unread emails via a one-shot Agent SDK query
+// Emails — direct MCP call, no Claude involved
 app.get('/api/emails', async (_req, res) => {
   const t0 = Date.now();
-  console.log('\n[/api/emails] ══════════════════════════════════');
-  console.log(`[/api/emails] Request received at ${new Date().toISOString()}`);
+
   try {
-    const { result } = await runQuery(
-      'Use the Microsoft Graph MCP tools to list my recent unread emails (up to 15). Do NOT use Bash, osascript, or any local mail app. Only use the MCP tools available to you. Return ONLY the results as plain text, one email per line, in this exact pipe-delimited format:\nID|SENDER_NAME|SENDER_EMAIL|SUBJECT|PREVIEW_FIRST_100_CHARS|ISO_TIME|IS_READ\nNo JSON, no markdown, no explanation, no header row. Just the pipe-delimited lines. If a field contains a pipe character, remove it.',
-    );
+    // Check cache first
+    const cached = getCached('emails');
+    if (cached) {
+      return res.json({ emails: cached });
+    }
+
+    const result = await callTool('list-mail-messages', {
+      filter: 'isRead eq false',
+      top: 15,
+      orderby: ['receivedDateTime desc'],
+      select: ['id', 'subject', 'from', 'receivedDateTime', 'bodyPreview', 'isRead', 'inferenceClassification'],
+    });
+
+    // Parse MCP result — content is an array of content blocks
+    const emails = [];
+    if (result?.content) {
+      for (const block of result.content) {
+        if (block.type === 'text' && block.text) {
+          try {
+            const data = JSON.parse(block.text);
+            const items = data.value || (Array.isArray(data) ? data : []);
+            for (const msg of items) {
+              if (msg.inferenceClassification === 'other') continue;
+              emails.push({
+                id: msg.id || '',
+                sender: msg.from?.emailAddress?.name || msg.from?.emailAddress?.address || 'Unknown',
+                senderEmail: msg.from?.emailAddress?.address || '',
+                subject: msg.subject || '(No subject)',
+                preview: (msg.bodyPreview || '').slice(0, 100),
+                time: msg.receivedDateTime || '',
+                isRead: msg.isRead ?? false,
+              });
+            }
+          } catch (e) {
+            console.error(`[/api/emails] Parse error: ${e.message}`);
+          }
+        }
+      }
+    }
 
     const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
-    console.log(`[/api/emails] Query completed in ${elapsed}s`);
-    console.log(`[/api/emails] Raw result (${result.length} chars):\n${result.slice(0, 2000)}`);
+    console.log(`[/api/emails] ${emails.length} emails in ${elapsed}s`);
 
-    if (!result || result.length === 0) {
-      console.log('[/api/emails] WARNING: Empty result from agent');
-      return res.json({ emails: [], raw: '(empty result)' });
-    }
-
-    const emails = parsePipeEmails(result);
-    if (emails) {
-      console.log(`[/api/emails] Parsed ${emails.length} emails successfully`);
-      console.log('[/api/emails] ══════════════════════════════════\n');
-      res.json({ emails });
-    } else {
-      console.log('[/api/emails] WARNING: Could not parse pipe-delimited result');
-      console.log('[/api/emails] Full result:', result);
-      console.log('[/api/emails] ══════════════════════════════════\n');
-      res.json({ emails: [], raw: result });
-    }
+    setCache('emails', emails);
+    res.json({ emails });
   } catch (err) {
-    const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
-    console.error(`[/api/emails] ERROR after ${elapsed}s:`, err.message);
-    console.error(`[/api/emails] Stack:`, err.stack);
-    console.log('[/api/emails] ══════════════════════════════════\n');
+    console.error('[/api/emails] ERROR:', err.message);
     res.status(500).json({ emails: [], error: err.message });
   }
 });
 
-// Parse pipe-delimited calendar lines into objects
-function parsePipeCalendar(str) {
-  if (!str || str.length === 0) return null;
-  const lines = str.split('\n').map(l => l.trim()).filter(l => l && l.includes('|'));
-  if (lines.length === 0) return null;
-
-  const events = [];
-  for (const line of lines) {
-    const parts = line.split('|');
-    if (parts.length < 4) continue;
-    events.push({
-      id: parts[0],
-      title: parts[1],
-      start: parts[2],
-      end: parts[3],
-      location: parts[4] || '',
-    });
-  }
-  return events.length > 0 ? events : null;
-}
-
-// Fetch upcoming calendar events (next 7 days) via a one-shot Agent SDK query
+// Calendar — direct MCP call, no Claude involved
 app.get('/api/calendar', async (_req, res) => {
   const t0 = Date.now();
-  console.log('\n[/api/calendar] ══════════════════════════════════');
-  console.log(`[/api/calendar] Request received at ${new Date().toISOString()}`);
+
   try {
-    const today = new Date().toISOString().split('T')[0];
-    const endDate = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
-    const { result } = await runQuery(
-      `Use the Microsoft Graph MCP tools to list my calendar events from ${today} to ${endDate} (next 7 days). Do NOT use Bash, osascript, or any local calendar app. Only use the MCP tools available to you. Return ONLY the results as plain text, one event per line, in this exact pipe-delimited format:\nID|TITLE|START_ISO|END_ISO|LOCATION\nNo JSON, no markdown, no explanation, no header row. Just the pipe-delimited lines. If a field contains a pipe character, remove it.`,
-    );
+    const cached = getCached('calendar');
+    if (cached) {
+      return res.json({ events: cached });
+    }
+
+    const now = new Date();
+    const startDateTime = now.toISOString();
+    // End of today
+    const endOfDay = new Date(now);
+    endOfDay.setHours(23, 59, 59, 999);
+    const endDateTime = endOfDay.toISOString();
+
+
+    const result = await callTool('get-calendar-view', {
+      startDateTime,
+      endDateTime,
+      top: 20,
+      orderby: ['start/dateTime asc'],
+      select: ['id', 'subject', 'start', 'end', 'location', 'attendees'],
+    });
+
+    const events = [];
+    if (result?.content) {
+      for (const block of result.content) {
+        if (block.type === 'text' && block.text) {
+          try {
+            const data = JSON.parse(block.text);
+            const items = data.value || (Array.isArray(data) ? data : []);
+            for (const evt of items) {
+              events.push({
+                id: evt.id || '',
+                title: evt.subject || '(No title)',
+                start: evt.start?.dateTime ? evt.start.dateTime + 'Z' : '',
+                end: evt.end?.dateTime ? evt.end.dateTime + 'Z' : '',
+                location: evt.location?.displayName || '',
+              });
+            }
+          } catch (e) {
+            console.error(`[/api/calendar] Parse error: ${e.message}`);
+          }
+        }
+      }
+    }
 
     const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
-    console.log(`[/api/calendar] Query completed in ${elapsed}s`);
-    console.log(`[/api/calendar] Raw result (${result.length} chars):\n${result.slice(0, 2000)}`);
+    console.log(`[/api/calendar] ${events.length} events in ${elapsed}s`);
 
-    if (!result || result.length === 0) {
-      console.log('[/api/calendar] WARNING: Empty result from agent');
-      return res.json({ events: [], raw: '(empty result)' });
-    }
-
-    const events = parsePipeCalendar(result);
-    if (events) {
-      console.log(`[/api/calendar] Parsed ${events.length} events successfully`);
-      console.log('[/api/calendar] ══════════════════════════════════\n');
-      res.json({ events });
-    } else {
-      console.log('[/api/calendar] WARNING: Could not parse pipe-delimited result');
-      console.log('[/api/calendar] Full result:', result);
-      console.log('[/api/calendar] ══════════════════════════════════\n');
-      res.json({ events: [], raw: result });
-    }
+    setCache('calendar', events);
+    res.json({ events });
   } catch (err) {
-    const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
-    console.error(`[/api/calendar] ERROR after ${elapsed}s:`, err.message);
-    console.error(`[/api/calendar] Stack:`, err.stack);
-    console.log('[/api/calendar] ══════════════════════════════════\n');
+    console.error('[/api/calendar] ERROR:', err.message);
     res.status(500).json({ events: [], error: err.message });
   }
 });
 
 // ── Start ───────────────────────────────────────────────────────────────────
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`\n  ┌─────────────────────────────────────────────┐`);
   console.log(`  │  AI Personal Assistant                       │`);
   console.log(`  │  http://localhost:${PORT}                        │`);
   console.log(`  └─────────────────────────────────────────────┘`);
-  console.log(`\n  MCP servers:`);
-  for (const [name, config] of Object.entries(mcpConfig.mcpServers)) {
-    console.log(`    - ${name}: ${config.command} ${(config.args || []).join(' ')}`);
-  }
-  console.log(`  System prompt: ${systemPrompt.length} chars loaded`);
-  console.log(`  Built-in tools: DISABLED (tools: [], MCP only)`);
+  console.log(`\n  Direct MCP: mail + calendar (no Claude needed)`);
+  console.log(`  Claude: chat only (via Agent SDK + MCP)`);
+  console.log(`  Cache TTL: ${CACHE_TTL / 1000}s`);
   console.log('');
+
+  // Pre-connect to MCP server so first request is fast
+  try {
+    await getMcpClient();
+  } catch (err) {
+    console.error('  [!] MCP pre-connect failed — will retry on first request');
+  }
 });

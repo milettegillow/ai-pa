@@ -694,56 +694,10 @@
         listEl.innerHTML =
           '<div class="skeleton"><div class="skeleton-bar w-60"></div><div class="skeleton-bar w-full"></div><div class="skeleton-bar w-80 h-8"></div><div style="height:8px"></div><div class="skeleton-bar w-40"></div><div class="skeleton-bar w-full"></div><div class="skeleton-bar w-60 h-8"></div></div>';
         subEl.textContent = "Loading...";
-        console.log(
-          "[fetchEmails] Starting fetch at",
-          new Date().toISOString(),
-        );
         try {
           const res = await fetch("/api/emails");
-          console.log("[fetchEmails] Response status:", res.status);
           const data = await res.json();
-          console.log(
-            "[fetchEmails] Response data:",
-            JSON.stringify(data).slice(0, 500),
-          );
-          console.log(
-            "[fetchEmails] Emails count:",
-            (data.emails || []).length,
-          );
-          if (data.raw)
-            console.log("[fetchEmails] Raw result from agent:", data.raw);
           emails = data.emails || [];
-          // Fallback: if server couldn't parse but sent raw, try client-side
-          if (emails.length === 0 && data.raw) {
-            console.log(
-              "[fetchEmails] Attempting client-side parse of raw data",
-            );
-            try {
-              const parsed = JSON.parse(data.raw);
-              if (Array.isArray(parsed)) emails = parsed;
-            } catch (_) {
-              // Try extracting JSON array from raw string
-              const start = data.raw.indexOf("[");
-              if (start !== -1) {
-                let depth = 0;
-                for (let i = start; i < data.raw.length; i++) {
-                  if (data.raw[i] === "[") depth++;
-                  else if (data.raw[i] === "]") depth--;
-                  if (depth === 0) {
-                    try {
-                      emails = JSON.parse(data.raw.slice(start, i + 1));
-                    } catch (_) {}
-                    break;
-                  }
-                }
-              }
-            }
-            console.log(
-              "[fetchEmails] Client-side parse result:",
-              emails.length,
-              "emails",
-            );
-          }
           subEl.textContent =
             emails.length === 0 ? "" : `${emails.length} unread`;
           renderEmails();
@@ -759,51 +713,10 @@
         const listEl = document.getElementById("agendaList");
         listEl.innerHTML =
           '<div class="skeleton"><div class="skeleton-bar w-40"></div><div class="skeleton-bar w-80"></div><div class="skeleton-bar w-60"></div></div>';
-        console.log(
-          "[fetchCalendar] Starting fetch at",
-          new Date().toISOString(),
-        );
         try {
           const res = await fetch("/api/calendar");
-          console.log("[fetchCalendar] Response status:", res.status);
           const data = await res.json();
-          console.log(
-            "[fetchCalendar] Response data:",
-            JSON.stringify(data).slice(0, 500),
-          );
-          if (data.raw)
-            console.log("[fetchCalendar] Raw result from agent:", data.raw);
           calendarEvents = data.events || [];
-          // Fallback: if server couldn't parse but sent raw, try client-side
-          if (calendarEvents.length === 0 && data.raw) {
-            console.log(
-              "[fetchCalendar] Attempting client-side parse of raw data",
-            );
-            try {
-              const parsed = JSON.parse(data.raw);
-              if (Array.isArray(parsed)) calendarEvents = parsed;
-            } catch (_) {
-              const start = data.raw.indexOf("[");
-              if (start !== -1) {
-                let depth = 0;
-                for (let i = start; i < data.raw.length; i++) {
-                  if (data.raw[i] === "[") depth++;
-                  else if (data.raw[i] === "]") depth--;
-                  if (depth === 0) {
-                    try {
-                      calendarEvents = JSON.parse(data.raw.slice(start, i + 1));
-                    } catch (_) {}
-                    break;
-                  }
-                }
-              }
-            }
-            console.log(
-              "[fetchCalendar] Client-side parse result:",
-              calendarEvents.length,
-              "events",
-            );
-          }
           renderAgenda();
         } catch (err) {
           console.error("[fetchCalendar] FETCH ERROR:", err);
