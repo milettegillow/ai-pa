@@ -36,7 +36,13 @@
     "Sign off: \"All the best, Milette\"",
     "Greet by first name only",
     "Keep replies short and direct",
-    "Never say \"I hope this email finds you well\" or similar"
+    "Never say \"I hope this email finds you well\" or similar",
+    "Never restate or paraphrase what the other person said back to them",
+    "Never add empathy qualifiers like \"that must be frustrating\" or \"that sounds really hard\"",
+    "Never use \"but honestly\" or \"to be honest\"",
+    "Never pad a short reply with extra sentences just to make it feel warmer — brevity IS warmth",
+    "If the reply can be said in 2 sentences, say it in 2 sentences",
+    "Positive energy should come through word choice, not through extra sentences"
   ],
   "bannedPhrases": [
     "I hope this finds you well",
@@ -47,6 +53,11 @@
     "Great question",
     "Delve",
     "It's worth noting",
-    "Having said that"
+    "Having said that",
+    "That must be frustrating",
+    "That sounds really hard",
+    "I can imagine how difficult",
+    "But honestly",
+    "To be honest"
   ]
 }
