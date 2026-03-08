@@ -316,7 +316,7 @@ app.get('/api/emails', async (_req, res) => {
       filter: 'isRead eq false',
       top: 50,
       orderby: ['receivedDateTime desc'],
-      select: ['id', 'subject', 'from', 'receivedDateTime', 'bodyPreview', 'isRead', 'inferenceClassification'],
+      select: ['id', 'subject', 'from', 'receivedDateTime', 'body', 'bodyPreview', 'isRead', 'inferenceClassification'],
     });
 
     // Parse MCP result — content is an array of content blocks
@@ -335,6 +335,8 @@ app.get('/api/emails', async (_req, res) => {
                 senderEmail: msg.from?.emailAddress?.address || '',
                 subject: msg.subject || '(No subject)',
                 preview: (msg.bodyPreview || '').slice(0, 100),
+                body: msg.body?.content || msg.bodyPreview || '',
+                bodyType: msg.body?.contentType || 'text',
                 time: msg.receivedDateTime || '',
                 isRead: msg.isRead ?? false,
               });
@@ -368,7 +370,7 @@ app.post('/api/emails/refresh', async (_req, res) => {
       filter: 'isRead eq false',
       top: 50,
       orderby: ['receivedDateTime desc'],
-      select: ['id', 'subject', 'from', 'receivedDateTime', 'bodyPreview', 'isRead', 'inferenceClassification'],
+      select: ['id', 'subject', 'from', 'receivedDateTime', 'body', 'bodyPreview', 'isRead', 'inferenceClassification'],
     });
 
     const emails = [];
@@ -386,6 +388,8 @@ app.post('/api/emails/refresh', async (_req, res) => {
                 senderEmail: msg.from?.emailAddress?.address || '',
                 subject: msg.subject || '(No subject)',
                 preview: (msg.bodyPreview || '').slice(0, 100),
+                body: msg.body?.content || msg.bodyPreview || '',
+                bodyType: msg.body?.contentType || 'text',
                 time: msg.receivedDateTime || '',
                 isRead: msg.isRead ?? false,
               });

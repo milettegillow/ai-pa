@@ -310,6 +310,49 @@
         margin-bottom: 14px;
       }
 
+      .email-body-frame {
+        width: 100%;
+        border: none;
+        border-radius: 6px;
+        background: #fff;
+        margin-bottom: 14px;
+        min-height: 80px;
+      }
+
+      .thread-toggle {
+        font-family: inherit;
+        font-size: 0.6rem;
+        font-weight: 400;
+        color: var(--muted);
+        background: transparent;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 4px 12px;
+        cursor: pointer;
+        margin-bottom: 14px;
+        transition: color 0.15s, border-color 0.15s;
+      }
+
+      .thread-toggle:hover {
+        color: var(--text);
+        border-color: var(--muted);
+      }
+
+      .thread-previous {
+        display: none;
+        border-top: 1px solid var(--border);
+        padding-top: 12px;
+        margin-bottom: 14px;
+      }
+
+      .thread-previous.visible {
+        display: block;
+      }
+
+      .thread-previous .email-expanded-body {
+        color: var(--text-faded);
+      }
+
       .inbox-empty {
         font-weight: 300;
         color: var(--text-faded);
@@ -955,7 +998,7 @@
               <div class="email-preview">${esc(email.preview || "")}</div>
             </div>
             <div class="email-expanded ${isExpanded ? "visible" : ""}">
-              <div class="email-expanded-body">${esc(email.preview || "(No preview available \u2014 ask your PA to read this email in full.)")}</div>
+              ${isExpanded ? renderEmailBody(email, i) : ""}
               <div class="email-actions">
                 <button class="btn btn-draft btn-small" onclick="event.stopPropagation(); draftReply(${i})" id="btnDraft${i}">Draft Reply</button>
                 <button class="btn btn-mark-read btn-small" onclick="event.stopPropagation(); markAsRead(${i})">Mark as read</button>
@@ -966,6 +1009,62 @@
         `;
           })
           .join("");
+      }
+
+      function splitThread(text) {
+        // Common reply separators in email threads
+        const separators = [
+          /^-{3,}\s*Original Message\s*-{3,}/im,
+          /^_{10,}/m,
+          /^From:\s.+/m,
+          /^On .{10,} wrote:\s*$/m,
+          /^>+\s/m,
+        ];
+        for (const sep of separators) {
+          const match = text.match(sep);
+          if (match && match.index > 0) {
+            const latest = text.slice(0, match.index).trimEnd();
+            const previous = text.slice(match.index).trim();
+            if (latest.length > 20 && previous.length > 10) {
+              return { latest, previous };
+            }
+          }
+        }
+        return { latest: text, previous: null };
+      }
+
+      function renderEmailBody(email, index) {
+        if (email.bodyType === "html" && email.body) {
+          return `<iframe class="email-body-frame" id="emailFrame${index}" sandbox="allow-same-origin" srcdoc="${esc(email.body)}" onload="resizeFrame(this)"></iframe>`;
+        }
+        const text = email.body || email.preview || "(No content available)";
+        const thread = splitThread(text);
+
+        if (!thread.previous) {
+          return `<div class="email-expanded-body">${esc(text)}</div>`;
+        }
+
+        return `
+          <div class="email-expanded-body">${esc(thread.latest)}</div>
+          <button class="thread-toggle" onclick="event.stopPropagation(); toggleThread(${index})" id="threadToggle${index}">Show previous messages</button>
+          <div class="thread-previous" id="threadPrevious${index}">
+            <div class="email-expanded-body">${esc(thread.previous)}</div>
+          </div>
+        `;
+      }
+
+      function toggleThread(index) {
+        const el = document.getElementById(`threadPrevious${index}`);
+        const btn = document.getElementById(`threadToggle${index}`);
+        if (!el || !btn) return;
+        const showing = el.classList.toggle("visible");
+        btn.textContent = showing ? "Hide previous messages" : "Show previous messages";
+      }
+
+      function resizeFrame(frame) {
+        try {
+          frame.style.height = frame.contentDocument.body.scrollHeight + 20 + "px";
+        } catch (e) { /* sandbox restriction */ }
       }
 
       function toggleEmail(index) {
