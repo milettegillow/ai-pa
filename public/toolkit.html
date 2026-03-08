@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="icon" type="image/png" href="/ai-pa-favicon.png" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toolkit - Personal Assistant</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg: #1e1e1a;
+        --bg-card: #232320;
+        --border: #2a2a24;
+        --bg-header: #191916;
+        --accent: #7c9e8a;
+        --accent-secondary: #a8c5bc;
+        --text: #e8f0ec;
+        --text-muted: #a8c5bc;
+        --text-faded: #555;
+        --muted: #888;
+        --surface: #2a2a25;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Outfit", sans-serif;
+        font-weight: 300;
+        font-size: 18px;
+        line-height: 1.6;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 24px;
+        background: var(--bg-header);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .header-title {
+        font-weight: 500;
+        font-size: 1.1rem;
+        color: var(--accent);
+      }
+
+      .back-link {
+        font-size: 0.7rem;
+        font-weight: 400;
+        color: var(--muted);
+        text-decoration: none;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 4px 12px;
+        transition: color 0.15s, border-color 0.15s;
+      }
+
+      .back-link:hover {
+        color: var(--text);
+        border-color: var(--muted);
+      }
+
+      .container {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      .section {
+        margin-bottom: 32px;
+      }
+
+      .section-title {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--accent);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+      }
+
+      textarea,
+      input[type="text"],
+      input[type="url"] {
+        width: 100%;
+        background: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-family: inherit;
+        font-size: 0.7rem;
+        font-weight: 300;
+        line-height: 1.6;
+        resize: vertical;
+      }
+
+      textarea:focus,
+      input:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+
+      .blurb-textarea {
+        min-height: 140px;
+      }
+
+      /* Links */
+      .link-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 6px;
+      }
+
+      .link-label {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .link-url {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .btn {
+        font-family: inherit;
+        font-size: 0.6rem;
+        font-weight: 400;
+        padding: 5px 14px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .btn-remove {
+        background: transparent;
+        color: var(--muted);
+        border: none;
+        font-size: 0.6rem;
+        padding: 4px 8px;
+        cursor: pointer;
+      }
+
+      .btn-remove:hover {
+        color: #e57373;
+      }
+
+      .btn-add {
+        background: transparent;
+        color: var(--text-muted);
+        border-color: var(--border);
+        margin-top: 4px;
+      }
+
+      .btn-add:hover {
+        color: var(--text);
+        border-color: var(--muted);
+      }
+
+      .btn-save {
+        background: var(--accent);
+        color: var(--bg);
+        border-color: var(--accent);
+        font-size: 0.7rem;
+        padding: 8px 24px;
+      }
+
+      .btn-save:hover {
+        background: var(--accent-secondary);
+      }
+
+      .btn-save:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+
+      /* Writing rules (read-only) */
+      .rule-list {
+        list-style: none;
+        padding: 0;
+      }
+
+      .rule-list li {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        padding: 4px 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .rule-list li::before {
+        content: "\2713";
+        color: var(--accent);
+        margin-right: 8px;
+        font-weight: 500;
+      }
+
+      /* Banned phrases */
+      .phrase-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+
+      .phrase-text {
+        flex: 1;
+        font-size: 0.7rem;
+        color: var(--text);
+        padding: 4px 0;
+      }
+
+      .phrase-input {
+        flex: 1;
+      }
+
+      .rule-gen {
+        margin: 8px 0;
+        padding: 10px 12px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+
+      .rule-gen-input {
+        width: 100%;
+        background: var(--bg);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 8px 10px;
+        font-family: inherit;
+        font-size: 0.65rem;
+        font-weight: 300;
+        margin-bottom: 8px;
+        resize: none;
+      }
+
+      .rule-gen-input:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+
+      .rule-gen-input::placeholder {
+        color: var(--text-faded);
+      }
+
+      .rule-gen-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .rule-gen-status {
+        font-size: 0.6rem;
+        color: var(--muted);
+        margin-left: 4px;
+      }
+
+      .rule-preview {
+        margin-top: 8px;
+        padding: 8px 10px;
+        background: var(--bg);
+        border: 1px solid var(--accent);
+        border-radius: 6px;
+        font-size: 0.65rem;
+        color: var(--accent-secondary);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .save-bar {
+        position: sticky;
+        bottom: 0;
+        background: var(--bg-header);
+        border-top: 1px solid var(--border);
+        padding: 12px 24px;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .save-status {
+        font-size: 0.65rem;
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-title">Toolkit</div>
+      <a href="/" class="back-link">&larr; Back to PA</a>
+    </header>
+
+    <div class="container" id="content">
+      <div style="color: var(--muted); font-size: 0.7rem; padding: 40px 0; text-align: center">Loading...</div>
+    </div>
+
+    <div class="save-bar">
+      <span class="save-status" id="saveStatus"></span>
+      <button class="btn btn-save" id="btnSave" onclick="save()">Save changes</button>
+    </div>
+
+    <script>
+      let toolkit = {};
+
+      async function load() {
+        try {
+          const res = await fetch("/api/toolkit");
+          toolkit = await res.json();
+          render();
+        } catch (err) {
+          document.getElementById("content").innerHTML =
+            `<div style="color:#e57373;padding:40px;text-align:center">Failed to load: ${err.message}</div>`;
+        }
+      }
+
+      function esc(s) {
+        const d = document.createElement("div");
+        d.textContent = s || "";
+        return d.innerHTML;
+      }
+
+      function render() {
+        const c = document.getElementById("content");
+        c.innerHTML = `
+          <div class="section">
+            <div class="section-title">About The Tech Bros</div>
+            <textarea class="blurb-textarea" id="blurb">${esc(toolkit.blurb || "")}</textarea>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Key Links</div>
+            <div id="linksContainer"></div>
+            <button class="btn btn-add" onclick="addLink()">+ Add link</button>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Writing Rules</div>
+            <div id="rulesContainer"></div>
+            <div id="ruleGenBox"></div>
+            <button class="btn btn-add" onclick="showRuleGen()">+ Add rule</button>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Banned Phrases (LLM-isms)</div>
+            <div id="phrasesContainer"></div>
+            <button class="btn btn-add" onclick="addPhrase()">+ Add phrase</button>
+          </div>
+        `;
+
+        renderLinks();
+        renderRules();
+        renderPhrases();
+      }
+
+      function renderLinks() {
+        const el = document.getElementById("linksContainer");
+        if (!el) return;
+        el.innerHTML = (toolkit.links || [])
+          .map(
+            (link, i) => `
+          <div class="link-row">
+            <input type="text" class="link-label" value="${esc(link.label)}" placeholder="Label"
+              oninput="toolkit.links[${i}].label = this.value" />
+            <input type="url" class="link-url" value="${esc(link.url)}" placeholder="https://..."
+              oninput="toolkit.links[${i}].url = this.value" />
+            <button class="btn-remove" onclick="removeLink(${i})">&times;</button>
+          </div>
+        `,
+          )
+          .join("");
+      }
+
+      function addLink() {
+        if (!toolkit.links) toolkit.links = [];
+        toolkit.links.push({ label: "", url: "" });
+        renderLinks();
+        // Focus the new label input
+        const inputs = document.querySelectorAll(".link-label");
+        if (inputs.length) inputs[inputs.length - 1].focus();
+      }
+
+      function removeLink(i) {
+        const label = toolkit.links[i]?.label || "this link";
+        if (!confirm(`Delete "${label}"? This cannot be undone.`)) return;
+        toolkit.links.splice(i, 1);
+        renderLinks();
+      }
+
+      function renderRules() {
+        const el = document.getElementById("rulesContainer");
+        if (!el) return;
+        el.innerHTML = (toolkit.writingRules || [])
+          .map(
+            (rule, i) => `
+          <div class="phrase-row">
+            <div class="phrase-text" style="color: var(--text-muted)"><span style="color:var(--accent);margin-right:8px;font-weight:500">\u2713</span>${esc(rule)}</div>
+            <button class="btn-remove" onclick="removeRule(${i})">&times;</button>
+          </div>
+        `,
+          )
+          .join("");
+      }
+
+      function removeRule(i) {
+        const rule = toolkit.writingRules[i] || "this rule";
+        if (!confirm(`Remove rule: "${rule}"?`)) return;
+        toolkit.writingRules.splice(i, 1);
+        renderRules();
+      }
+
+      function showRuleGen() {
+        const box = document.getElementById("ruleGenBox");
+        box.innerHTML = `
+          <div class="rule-gen">
+            <textarea class="rule-gen-input" id="ruleInstruction" rows="2"
+              placeholder="Describe the rule in your own words, e.g. 'I never use exclamation marks' or 'always refer to the company as TTB internally'"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();generateRule()}"></textarea>
+            <div class="rule-gen-actions">
+              <button class="btn btn-add" onclick="generateRule()" id="btnGenRule">Generate rule</button>
+              <button class="btn-remove" onclick="hideRuleGen()">Cancel</button>
+              <span class="rule-gen-status" id="ruleGenStatus"></span>
+            </div>
+            <div id="rulePreviewBox"></div>
+          </div>
+        `;
+        document.getElementById("ruleInstruction").focus();
+      }
+
+      function hideRuleGen() {
+        document.getElementById("ruleGenBox").innerHTML = "";
+      }
+
+      async function generateRule() {
+        const input = document.getElementById("ruleInstruction");
+        const btn = document.getElementById("btnGenRule");
+        const status = document.getElementById("ruleGenStatus");
+        const preview = document.getElementById("rulePreviewBox");
+        const instruction = input.value.trim();
+        if (!instruction) return;
+
+        btn.disabled = true;
+        btn.textContent = "Thinking...";
+        status.textContent = "";
+        preview.innerHTML = "";
+
+        try {
+          const res = await fetch("/api/toolkit/generate-rule", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ instruction }),
+          });
+          const data = await res.json();
+
+          if (data.error) {
+            status.textContent = "Error: " + data.error;
+            return;
+          }
+
+          preview.innerHTML = `
+            <div class="rule-preview">
+              <span>${esc(data.rule)}</span>
+              <div style="display:flex;gap:6px;flex-shrink:0">
+                <button class="btn btn-add" onclick="acceptRule('${esc(data.rule).replace(/'/g, "\\'")}')">Add</button>
+                <button class="btn-remove" onclick="generateRule()">Retry</button>
+              </div>
+            </div>
+          `;
+        } catch (err) {
+          status.textContent = "Error: " + err.message;
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Generate rule";
+        }
+      }
+
+      function acceptRule(rule) {
+        if (!toolkit.writingRules) toolkit.writingRules = [];
+        toolkit.writingRules.push(rule);
+        renderRules();
+        hideRuleGen();
+      }
+
+      function renderPhrases() {
+        const el = document.getElementById("phrasesContainer");
+        if (!el) return;
+        el.innerHTML = (toolkit.bannedPhrases || [])
+          .map(
+            (phrase, i) => `
+          <div class="phrase-row">
+            <div class="phrase-text">"${esc(phrase)}"</div>
+            <button class="btn-remove" onclick="removePhrase(${i})">&times;</button>
+          </div>
+        `,
+          )
+          .join("");
+      }
+
+      function addPhrase() {
+        const phrase = prompt("Enter a phrase to ban:");
+        if (!phrase || !phrase.trim()) return;
+        if (!toolkit.bannedPhrases) toolkit.bannedPhrases = [];
+        toolkit.bannedPhrases.push(phrase.trim());
+        renderPhrases();
+      }
+
+      function removePhrase(i) {
+        const phrase = toolkit.bannedPhrases[i] || "this phrase";
+        if (!confirm(`Remove "${phrase}"?`)) return;
+        toolkit.bannedPhrases.splice(i, 1);
+        renderPhrases();
+      }
+
+      async function save() {
+        const btn = document.getElementById("btnSave");
+        const status = document.getElementById("saveStatus");
+        btn.disabled = true;
+        btn.textContent = "Saving...";
+        status.textContent = "";
+
+        // Read blurb from textarea (may have been edited)
+        const blurbEl = document.getElementById("blurb");
+        if (blurbEl) toolkit.blurb = blurbEl.value;
+
+        try {
+          const res = await fetch("/api/toolkit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              blurb: toolkit.blurb,
+              links: toolkit.links,
+              writingRules: toolkit.writingRules,
+              bannedPhrases: toolkit.bannedPhrases,
+            }),
+          });
+          const data = await res.json();
+          if (data.ok) {
+            status.textContent = "Saved";
+            setTimeout(() => (status.textContent = ""), 2000);
+          } else {
+            status.textContent = "Error saving";
+          }
+        } catch (err) {
+          status.textContent = "Error: " + err.message;
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Save changes";
+        }
+      }
+
+      load();
+    </script>
+  </body>
+</html>

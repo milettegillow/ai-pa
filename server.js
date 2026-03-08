@@ -1,5 +1,5 @@
 import express from 'express';
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { query } from '@anthropic-ai/claude-agent-sdk';
@@ -14,11 +14,33 @@ app.use(express.static(join(__dirname, 'public')));
 
 const PORT = process.env.PORT || 3000;
 
-// Load system prompt
+// Load system prompts
 const systemPrompt = readFileSync(join(__dirname, 'SYSTEM_PROMPT.md'), 'utf-8');
+const draftReplyPrompt = readFileSync(join(__dirname, 'DRAFT_REPLY_PROMPT.md'), 'utf-8');
 
 // Load MCP server config from .mcp.json
 const mcpConfig = JSON.parse(readFileSync(join(__dirname, '.mcp.json'), 'utf-8'));
+
+// Toolkit config
+const toolkitPath = join(__dirname, 'toolkit.json');
+
+function loadToolkit() {
+  if (!existsSync(toolkitPath)) return {};
+  return JSON.parse(readFileSync(toolkitPath, 'utf-8'));
+}
+
+function saveToolkit(data) {
+  writeFileSync(toolkitPath, JSON.stringify(data, null, 2) + '\n');
+}
+
+const DEFAULT_WRITING_RULES = [
+  'Always use UK English',
+  'Never use em dashes (\u2014)',
+  'Sign off: "All the best, Milette"',
+  'Greet by first name only',
+  'Keep replies short and direct',
+  'Never say "I hope this email finds you well" or similar',
+];
 
 // ── Direct MCP Client ────────────────────────────────────────────────────────
 
@@ -151,6 +173,45 @@ async function runQuery(prompt, resumeSessionId = null) {
 
 // ── Routes ──────────────────────────────────────────────────────────────────
 
+// Toolkit endpoints
+app.get('/api/toolkit', (_req, res) => {
+  const toolkit = loadToolkit();
+  if (!toolkit.writingRules) toolkit.writingRules = DEFAULT_WRITING_RULES;
+  res.json(toolkit);
+});
+
+app.post('/api/toolkit', (req, res) => {
+  const { blurb, links, writingRules, bannedPhrases } = req.body;
+  saveToolkit({ blurb, links, writingRules, bannedPhrases });
+  res.json({ ok: true });
+});
+
+// Generate a writing rule from natural language via Claude
+app.post('/api/toolkit/generate-rule', async (req, res) => {
+  try {
+    const { instruction } = req.body;
+    if (!instruction) return res.status(400).json({ error: 'instruction is required' });
+
+    let rule = '';
+    for await (const message of query({ prompt: instruction, options: {
+      systemPrompt: `You are a writing style rule generator. The user will describe a writing preference in casual language. Your job is to turn it into a single, concise writing rule (one sentence, imperative mood, like "Always use UK English" or "Never start emails with a greeting cliché"). Return ONLY the rule text, nothing else. No quotes, no explanation, no bullet point.`,
+      tools: [],
+      permissionMode: 'bypassPermissions',
+      allowDangerouslySkipPermissions: true,
+      maxTurns: 1,
+    }})) {
+      if ('result' in message) {
+        rule = message.result.replace(/^[-•*"\s]+/, '').replace(/["]+$/, '').trim();
+      }
+    }
+
+    res.json({ rule });
+  } catch (err) {
+    console.error('[/api/toolkit/generate-rule] ERROR:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Chat endpoint — uses Claude Agent SDK with MCP access
 app.post('/api/chat', async (req, res) => {
   try {
@@ -183,6 +244,58 @@ app.post('/api/emails/:id/read', async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     console.error('[/api/emails/:id/read] ERROR:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Draft reply — uses Claude Agent SDK with draft-specific system prompt + toolkit context
+app.post('/api/emails/:id/draft-reply', async (req, res) => {
+  try {
+    const { sender, senderEmail, subject, preview } = req.body;
+    if (!sender || !subject) {
+      return res.status(400).json({ error: 'sender and subject are required' });
+    }
+
+    // Build system prompt with toolkit context
+    const toolkit = loadToolkit();
+    let fullPrompt = draftReplyPrompt;
+
+    if (toolkit.blurb) {
+      fullPrompt += `\n\n## About The Tech Bros\n\n${toolkit.blurb}`;
+    }
+    if (toolkit.links?.length) {
+      fullPrompt += '\n\n## Key Links\n\n' + toolkit.links.map(l => `- ${l.label}: ${l.url}`).join('\n');
+    }
+    const rules = toolkit.writingRules || DEFAULT_WRITING_RULES;
+    fullPrompt += '\n\n## Writing Rules\n\n' + rules.map(r => `- ${r}`).join('\n');
+    if (toolkit.bannedPhrases?.length) {
+      fullPrompt += '\n\n## Banned Phrases (NEVER use these)\n\n' + toolkit.bannedPhrases.map(p => `- "${p}"`).join('\n');
+    }
+
+    const prompt = `Draft a reply to this email:
+
+From: ${sender} <${senderEmail || ''}>
+Subject: ${subject}
+Body: ${preview || '(no preview available)'}
+
+Write ONLY the reply body text. No subject line, no headers, no explanation.`;
+
+    let draft = '';
+    for await (const message of query({ prompt, options: {
+      systemPrompt: fullPrompt,
+      tools: [],
+      permissionMode: 'bypassPermissions',
+      allowDangerouslySkipPermissions: true,
+      maxTurns: 1,
+    }})) {
+      if ('result' in message) {
+        draft = message.result;
+      }
+    }
+
+    res.json({ draft });
+  } catch (err) {
+    console.error('[/api/emails/:id/draft-reply] ERROR:', err.message);
     res.status(500).json({ error: err.message });
   }
 });

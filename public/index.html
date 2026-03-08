@@ -79,6 +79,22 @@
         letter-spacing: 0.18em;
       }
 
+      .toolkit-link {
+        font-size: 0.55rem;
+        font-weight: 400;
+        color: var(--muted);
+        text-decoration: none;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 4px 12px;
+        transition: color 0.15s, border-color 0.15s;
+      }
+
+      .toolkit-link:hover {
+        color: var(--text);
+        border-color: var(--muted);
+      }
+
       /* ── Section Labels ──────────────────────────── */
 
       .section-label {
@@ -408,6 +424,78 @@
         align-items: center;
       }
 
+      .draft-box {
+        margin-top: 10px;
+        border-top: 1px solid var(--border);
+        padding-top: 10px;
+      }
+
+      .draft-loading {
+        font-size: 0.7rem;
+        color: var(--muted);
+        padding: 8px 0;
+      }
+
+      .draft-textarea {
+        width: 100%;
+        min-height: 100px;
+        background: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px;
+        font-family: inherit;
+        font-size: 0.7rem;
+        line-height: 1.5;
+        resize: vertical;
+        box-sizing: border-box;
+      }
+
+      .draft-textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+
+      .draft-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-top: 8px;
+      }
+
+      .btn-send-draft {
+        background: var(--accent);
+        color: var(--bg);
+        border-color: var(--accent);
+      }
+
+      .btn-send-draft:hover {
+        background: var(--accent-secondary);
+      }
+
+      .btn-regenerate {
+        background: transparent;
+        color: var(--text);
+        border-color: var(--border);
+      }
+
+      .btn-regenerate:hover {
+        border-color: var(--muted);
+      }
+
+      .btn-discard {
+        background: transparent;
+        color: var(--muted);
+        border: none;
+        font-size: 0.58rem;
+        padding: 4px 8px;
+        cursor: pointer;
+      }
+
+      .btn-discard:hover {
+        color: var(--text);
+      }
+
       .chat-messages {
         flex: 1;
         overflow-y: auto;
@@ -624,7 +712,10 @@
     <!-- Header -->
     <header class="header">
       <div class="header-greeting" id="greeting">Good morning, Milette</div>
-      <div class="header-date" id="headerDate"></div>
+      <div style="display:flex;align-items:center;gap:16px">
+        <div class="header-date" id="headerDate"></div>
+        <a href="/toolkit.html" class="toolkit-link">Toolkit</a>
+      </div>
     </header>
 
     <!-- Left: Agenda -->
@@ -866,9 +957,10 @@
             <div class="email-expanded ${isExpanded ? "visible" : ""}">
               <div class="email-expanded-body">${esc(email.preview || "(No preview available \u2014 ask your PA to read this email in full.)")}</div>
               <div class="email-actions">
-                <button class="btn btn-draft btn-small" onclick="event.stopPropagation(); draftReply(${i})">Draft Reply</button>
+                <button class="btn btn-draft btn-small" onclick="event.stopPropagation(); draftReply(${i})" id="btnDraft${i}">Draft Reply</button>
                 <button class="btn btn-mark-read btn-small" onclick="event.stopPropagation(); markAsRead(${i})">Mark as read</button>
               </div>
+              <div id="draftBox${i}"></div>
             </div>
           </div>
         `;
@@ -881,11 +973,71 @@
         renderEmails();
       }
 
-      function draftReply(index) {
+      async function draftReply(index) {
         const email = emails[index];
-        sendMessage(
-          `Draft a reply to the email from ${email.sender} with subject "${email.subject}".`,
-        );
+        const box = document.getElementById(`draftBox${index}`);
+        const btn = document.getElementById(`btnDraft${index}`);
+        if (!box) return;
+
+        // Show loading state
+        btn.disabled = true;
+        btn.textContent = "Drafting...";
+        box.innerHTML = '<div class="draft-box"><div class="draft-loading">Drafting reply...</div></div>';
+
+        try {
+          const res = await fetch(`/api/emails/${encodeURIComponent(email.id)}/draft-reply`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sender: email.sender,
+              senderEmail: email.senderEmail,
+              subject: email.subject,
+              preview: email.preview,
+            }),
+          });
+          const data = await res.json();
+
+          if (data.error) {
+            box.innerHTML = `<div class="draft-box"><div class="draft-loading">Error: ${esc(data.error)}</div></div>`;
+            return;
+          }
+
+          showDraftEditor(index, data.draft);
+        } catch (err) {
+          box.innerHTML = `<div class="draft-box"><div class="draft-loading">Error: ${esc(err.message)}</div></div>`;
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Draft Reply";
+        }
+      }
+
+      function showDraftEditor(index, draftText) {
+        const box = document.getElementById(`draftBox${index}`);
+        if (!box) return;
+
+        box.innerHTML = `
+          <div class="draft-box" onclick="event.stopPropagation()">
+            <textarea class="draft-textarea" id="draftTextarea${index}">${esc(draftText)}</textarea>
+            <div class="draft-actions">
+              <button class="btn btn-send-draft btn-small" onclick="event.stopPropagation(); sendDraft(${index})">Send</button>
+              <button class="btn btn-regenerate btn-small" onclick="event.stopPropagation(); draftReply(${index})">Regenerate</button>
+              <button class="btn-discard" onclick="event.stopPropagation(); discardDraft(${index})">Discard</button>
+            </div>
+          </div>
+        `;
+      }
+
+      function discardDraft(index) {
+        const box = document.getElementById(`draftBox${index}`);
+        if (box) box.innerHTML = "";
+      }
+
+      function sendDraft(index) {
+        const textarea = document.getElementById(`draftTextarea${index}`);
+        if (textarea) {
+          console.log("Draft to send:", textarea.value);
+          alert("Send feature coming soon");
+        }
       }
 
       // IMPORTANT: requires double confirmation before marking as read

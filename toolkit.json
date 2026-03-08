@@ -1,0 +1,52 @@
+{
+  "blurb": "The Tech Bros is the world's first all-female, all-technical accelerator, combining a fully funded hacker house in Norway with six weeks of support to help founders go from idea to MVP. We have an 8.7% acceptance rate, and have previously selected exceptional engineers from companies like Tesla, Discord, Google, Apple, and Microsoft. Our leading company from 2025 has now closed their £1.2m pre-seed round. We also run year-round events to spark entrepreneurship among technical women and are now raising our first £5m microfund. More on us here: https://sifted.eu/articles/meet-the-women-behind-the-tech-bros-were-laying-claim-to-the-term",
+  "links": [
+    {
+      "label": "Website",
+      "url": "https://thetechbros.io/"
+    },
+    {
+      "label": "Sifted Article",
+      "url": "https://sifted.eu/articles/meet-the-women-behind-the-tech-bros-were-laying-claim-to-the-term"
+    },
+    {
+      "label": "Sponsorship Deck",
+      "url": "https://docsend.com/v/3hv54/thetechbros"
+    },
+    {
+      "label": "Fund Deck",
+      "url": "https://docsend.com/view/2n6txfs92ur9uwzu"
+    },
+    {
+      "label": "Milette's Calendly",
+      "url": "https://calendly.com/milette-thetechbros/30-minute-meeting"
+    },
+    {
+      "label": "Milette's LinkedIn",
+      "url": "https://www.linkedin.com/in/milettegillow/"
+    },
+    {
+      "label": "Sedi's LinkedIn",
+      "url": "https://www.linkedin.com/in/sedinam-simpson/"
+    }
+  ],
+  "writingRules": [
+    "Always use UK English",
+    "Never use em dashes (\u2014)",
+    "Sign off: \"All the best, Milette\"",
+    "Greet by first name only",
+    "Keep replies short and direct",
+    "Never say \"I hope this email finds you well\" or similar"
+  ],
+  "bannedPhrases": [
+    "I hope this finds you well",
+    "Certainly",
+    "Absolutely",
+    "Of course",
+    "I'd be happy to",
+    "Great question",
+    "Delve",
+    "It's worth noting",
+    "Having said that"
+  ]
+}
