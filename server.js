@@ -172,6 +172,21 @@ app.post('/api/reset', (_req, res) => {
   res.json({ ok: true });
 });
 
+// IMPORTANT: requires double confirmation before marking as read
+app.post('/api/emails/:id/read', async (req, res) => {
+  try {
+    await callTool('update-mail-message', {
+      messageId: req.params.id,
+      body: { isRead: true },
+    });
+    delete cache['emails'];
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[/api/emails/:id/read] ERROR:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Emails — direct MCP call, no Claude involved
 app.get('/api/emails', async (_req, res) => {
   const t0 = Date.now();
@@ -225,6 +240,57 @@ app.get('/api/emails', async (_req, res) => {
     res.json({ emails });
   } catch (err) {
     console.error('[/api/emails] ERROR:', err.message);
+    res.status(500).json({ emails: [], error: err.message });
+  }
+});
+
+// Refresh emails — bypass cache
+app.post('/api/emails/refresh', async (_req, res) => {
+  const t0 = Date.now();
+  delete cache['emails'];
+
+  try {
+    const result = await callTool('list-mail-folder-messages', {
+      mailFolderId: 'Inbox',
+      filter: 'isRead eq false',
+      top: 50,
+      orderby: ['receivedDateTime desc'],
+      select: ['id', 'subject', 'from', 'receivedDateTime', 'bodyPreview', 'isRead', 'inferenceClassification'],
+    });
+
+    const emails = [];
+    if (result?.content) {
+      for (const block of result.content) {
+        if (block.type === 'text' && block.text) {
+          try {
+            const data = JSON.parse(block.text);
+            const items = data.value || (Array.isArray(data) ? data : []);
+            for (const msg of items) {
+              if (msg.inferenceClassification === 'other') continue;
+              emails.push({
+                id: msg.id || '',
+                sender: msg.from?.emailAddress?.name || msg.from?.emailAddress?.address || 'Unknown',
+                senderEmail: msg.from?.emailAddress?.address || '',
+                subject: msg.subject || '(No subject)',
+                preview: (msg.bodyPreview || '').slice(0, 100),
+                time: msg.receivedDateTime || '',
+                isRead: msg.isRead ?? false,
+              });
+            }
+          } catch (e) {
+            console.error(`[/api/emails/refresh] Parse error: ${e.message}`);
+          }
+        }
+      }
+    }
+
+    const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
+    console.log(`[/api/emails/refresh] ${emails.length} emails in ${elapsed}s`);
+
+    setCache('emails', emails);
+    res.json({ emails });
+  } catch (err) {
+    console.error('[/api/emails/refresh] ERROR:', err.message);
     res.status(500).json({ emails: [], error: err.message });
   }
 });

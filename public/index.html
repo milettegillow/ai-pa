@@ -171,6 +171,34 @@
         padding: 16px 16px 0;
       }
 
+      .inbox-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
+
+      .btn-refresh {
+        font-size: 0.6rem;
+        font-weight: 400;
+        color: var(--muted);
+        background: transparent;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 3px 10px;
+        cursor: pointer;
+        transition: color 0.15s, border-color 0.15s;
+      }
+
+      .btn-refresh:hover {
+        color: var(--text);
+        border-color: var(--muted);
+      }
+
+      .btn-refresh:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+
       .inbox-count {
         font-size: 12px;
         font-weight: 300;
@@ -361,6 +389,23 @@
 
       .btn-draft:hover {
         background: var(--accent-secondary);
+      }
+
+      .btn-mark-read {
+        background: transparent;
+        color: var(--muted);
+        border-color: var(--border);
+      }
+
+      .btn-mark-read:hover {
+        color: var(--text);
+        border-color: var(--muted);
+      }
+
+      .email-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
       }
 
       .chat-messages {
@@ -597,7 +642,10 @@
     <!-- Centre: Inbox -->
     <div class="col-inbox">
       <div class="col-inbox-header">
-        <div class="section-label">Inbox</div>
+        <div class="inbox-header-row">
+          <div class="section-label">Inbox</div>
+          <button class="btn-refresh" id="btnRefreshEmails" onclick="refreshEmails()">Refresh</button>
+        </div>
         <div class="inbox-count" id="inboxSubheading">Loading...</div>
       </div>
       <div class="inbox-list" id="inboxList">
@@ -709,6 +757,27 @@
         }
       }
 
+      async function refreshEmails() {
+        const btn = document.getElementById("btnRefreshEmails");
+        const subEl = document.getElementById("inboxSubheading");
+        btn.textContent = "Refreshing...";
+        btn.disabled = true;
+        try {
+          const res = await fetch("/api/emails/refresh", { method: "POST" });
+          const data = await res.json();
+          emails = data.emails || [];
+          subEl.textContent =
+            emails.length === 0 ? "" : `${emails.length} unread`;
+          expandedEmail = null;
+          renderEmails();
+        } catch (err) {
+          console.error("[refreshEmails] ERROR:", err);
+        } finally {
+          btn.textContent = "Refresh";
+          btn.disabled = false;
+        }
+      }
+
       async function fetchCalendar() {
         const listEl = document.getElementById("agendaList");
         listEl.innerHTML =
@@ -796,8 +865,9 @@
             </div>
             <div class="email-expanded ${isExpanded ? "visible" : ""}">
               <div class="email-expanded-body">${esc(email.preview || "(No preview available \u2014 ask your PA to read this email in full.)")}</div>
-              <div>
+              <div class="email-actions">
                 <button class="btn btn-draft btn-small" onclick="event.stopPropagation(); draftReply(${i})">Draft Reply</button>
+                <button class="btn btn-mark-read btn-small" onclick="event.stopPropagation(); markAsRead(${i})">Mark as read</button>
               </div>
             </div>
           </div>
@@ -816,6 +886,27 @@
         sendMessage(
           `Draft a reply to the email from ${email.sender} with subject "${email.subject}".`,
         );
+      }
+
+      // IMPORTANT: requires double confirmation before marking as read
+      async function markAsRead(index) {
+        const email = emails[index];
+        if (!confirm("Mark this email as read? This cannot be undone.")) return;
+        try {
+          const res = await fetch(`/api/emails/${encodeURIComponent(email.id)}/read`, { method: "POST" });
+          const data = await res.json();
+          if (data.ok) {
+            emails.splice(index, 1);
+            expandedEmail = null;
+            const subEl = document.getElementById("emailSub");
+            subEl.textContent = emails.length === 0 ? "" : `${emails.length} unread`;
+            renderEmails();
+          } else {
+            alert("Failed to mark as read: " + (data.error || "Unknown error"));
+          }
+        } catch (err) {
+          alert("Failed to mark as read: " + err.message);
+        }
       }
 
       // ── Chat ───────────────────────────────────────
