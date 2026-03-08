@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="icon" type="image/png" href="/ai-pa-favicon.png" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Archive - Personal Assistant</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg: #1e1e1a;
+        --bg-card: #232320;
+        --border: #2a2a24;
+        --bg-header: #191916;
+        --accent: #7c9e8a;
+        --accent-secondary: #a8c5bc;
+        --text: #e8f0ec;
+        --text-muted: #a8c5bc;
+        --text-faded: #555;
+        --muted: #888;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Outfit", sans-serif;
+        font-weight: 300;
+        font-size: 18px;
+        line-height: 1.6;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 24px;
+        background: var(--bg-header);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .header-title {
+        font-weight: 500;
+        font-size: 1.1rem;
+        color: var(--accent);
+      }
+
+      .back-link {
+        font-size: 0.7rem;
+        font-weight: 400;
+        color: var(--muted);
+        text-decoration: none;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 4px 12px;
+        transition: color 0.15s, border-color 0.15s;
+      }
+
+      .back-link:hover {
+        color: var(--text);
+        border-color: var(--muted);
+      }
+
+      .container {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      .date-group {
+        margin-bottom: 28px;
+      }
+
+      .date-label {
+        font-size: 0.65rem;
+        font-weight: 500;
+        color: var(--accent);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .archive-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 6px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.7rem;
+        font-weight: 300;
+        color: var(--text-muted);
+      }
+
+      .archive-item .checkmark {
+        color: var(--accent);
+        font-weight: 500;
+        flex-shrink: 0;
+      }
+
+      .archive-item .completed-time {
+        font-size: 0.6rem;
+        color: var(--text-faded);
+        margin-left: auto;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .empty-state {
+        color: var(--text-faded);
+        font-size: 0.7rem;
+        padding: 40px 0;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-title">Archive</div>
+      <a href="/" class="back-link">&larr; Back to PA</a>
+    </header>
+
+    <div class="container" id="content">
+      <div class="empty-state">Loading...</div>
+    </div>
+
+    <script>
+      async function load() {
+        try {
+          const res = await fetch("/api/action-items/archive");
+          const data = await res.json();
+          render(data.archive || {});
+        } catch (err) {
+          document.getElementById("content").innerHTML =
+            `<div class="empty-state">Failed to load: ${err.message}</div>`;
+        }
+      }
+
+      function esc(s) {
+        const d = document.createElement("div");
+        d.textContent = s || "";
+        return d.innerHTML;
+      }
+
+      function render(archive) {
+        const container = document.getElementById("content");
+        const dates = Object.keys(archive).sort((a, b) => b.localeCompare(a));
+
+        if (dates.length === 0) {
+          container.innerHTML = '<div class="empty-state">No archived items yet. Completed action items will appear here after archiving.</div>';
+          return;
+        }
+
+        container.innerHTML = dates.map(date => {
+          const items = archive[date];
+          const formattedDate = new Date(date + "T12:00:00").toLocaleDateString("en-GB", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          });
+
+          return `
+            <div class="date-group">
+              <div class="date-label">${esc(formattedDate)}</div>
+              ${items.map(item => {
+                const completedTime = item.completedAt
+                  ? new Date(item.completedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })
+                  : "";
+                return `
+                  <div class="archive-item">
+                    <span class="checkmark">\u2713</span>
+                    <span>${esc(item.text)}</span>
+                    ${completedTime ? `<span class="completed-time">${completedTime}</span>` : ""}
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          `;
+        }).join("");
+      }
+
+      load();
+    </script>
+  </body>
+</html>

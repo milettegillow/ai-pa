@@ -2,6 +2,7 @@ import express from 'express';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { randomUUID } from 'crypto';
 import { query } from '@anthropic-ai/claude-agent-sdk';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
@@ -31,6 +32,22 @@ function loadToolkit() {
 
 function saveToolkit(data) {
   writeFileSync(toolkitPath, JSON.stringify(data, null, 2) + '\n');
+}
+
+// Action items config
+const actionItemsPath = join(__dirname, 'action-items.json');
+
+function loadActionItems() {
+  if (!existsSync(actionItemsPath)) return { items: [], archive: {} };
+  try {
+    return JSON.parse(readFileSync(actionItemsPath, 'utf-8'));
+  } catch {
+    return { items: [], archive: {} };
+  }
+}
+
+function saveActionItems(data) {
+  writeFileSync(actionItemsPath, JSON.stringify(data, null, 2) + '\n');
 }
 
 const DEFAULT_WRITING_RULES = [
@@ -452,6 +469,7 @@ app.get('/api/calendar', async (_req, res) => {
                 start: evt.start?.dateTime ? evt.start.dateTime + 'Z' : '',
                 end: evt.end?.dateTime ? evt.end.dateTime + 'Z' : '',
                 location: evt.location?.displayName || '',
+                attendees: (evt.attendees || []).map(a => a.emailAddress?.name || a.emailAddress?.address || '').filter(Boolean),
               });
             }
           } catch (e) {
@@ -472,6 +490,198 @@ app.get('/api/calendar', async (_req, res) => {
   }
 });
 
+// ── Action Items ─────────────────────────────────────────────────────────────
+
+app.get('/api/action-items', (_req, res) => {
+  const data = loadActionItems();
+  res.json({ items: data.items || [] });
+});
+
+app.post('/api/action-items/generate', async (_req, res) => {
+  try {
+    // Gather current emails and calendar from cache or fetch
+    let emailList = getCached('emails');
+    if (!emailList) {
+      try {
+        const emailRes = await fetch(`http://localhost:${PORT}/api/emails`);
+        const emailData = await emailRes.json();
+        emailList = emailData.emails || [];
+      } catch { emailList = []; }
+    }
+
+    let eventList = getCached('calendar');
+    if (!eventList) {
+      try {
+        const calRes = await fetch(`http://localhost:${PORT}/api/calendar`);
+        const calData = await calRes.json();
+        eventList = calData.events || [];
+      } catch { eventList = []; }
+    }
+
+    const data = loadActionItems();
+    const existingTexts = (data.items || []).map(i => i.text.toLowerCase());
+
+    const toolkit = loadToolkit();
+    const context = toolkit.blurb ? `\n\nContext about Milette's company: ${toolkit.blurb}` : '';
+
+    const emailSummary = emailList.map(e => `- From: ${e.sender} (${e.senderEmail}) | Subject: ${e.subject} | Preview: ${e.preview}`).join('\n');
+    const calSummary = eventList.map(e => `- ${e.title} (${new Date(e.start).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}–${new Date(e.end).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })})`).join('\n');
+    const existingSummary = existingTexts.length ? '\n\nExisting action items (DO NOT duplicate these):\n' + existingTexts.map(t => `- ${t}`).join('\n') : '';
+
+    const prompt = `Here are Milette's unread emails:\n${emailSummary || '(none)'}\n\nHere is today's calendar:\n${calSummary || '(none)'}${existingSummary}\n\nExtract action items — things Milette needs to do, reply to, follow up on, or prepare for. Be specific with names and context (e.g. "Reply to Gabrielle at Aldea re: intro" not "Reply to email").`;
+
+    let rawResult = '';
+    for await (const message of query({ prompt, options: {
+      systemPrompt: `You are Milette's personal assistant. Extract action items from her emails and calendar. Return ONLY a valid JSON array of strings. Each string should be a specific, actionable task. No explanation, no markdown, just the JSON array.${context}`,
+      tools: [],
+      permissionMode: 'bypassPermissions',
+      allowDangerouslySkipPermissions: true,
+      maxTurns: 1,
+    }})) {
+      if ('result' in message) {
+        rawResult = message.result;
+      }
+    }
+
+    // Parse the JSON array from Claude's response
+    let newItems = [];
+    try {
+      const jsonMatch = rawResult.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        newItems = JSON.parse(jsonMatch[0]);
+      }
+    } catch (e) {
+      console.error('[action-items/generate] Failed to parse Claude response:', e.message);
+      return res.status(500).json({ error: 'Failed to parse action items from Claude' });
+    }
+
+    // Deduplicate and add new items
+    let added = 0;
+    for (const text of newItems) {
+      if (typeof text !== 'string' || !text.trim()) continue;
+      const lower = text.trim().toLowerCase();
+      if (existingTexts.includes(lower)) continue;
+      data.items.push({
+        id: randomUUID(),
+        text: text.trim(),
+        source: 'email',
+        sourceId: '',
+        createdAt: new Date().toISOString(),
+        completedAt: null,
+        completed: false,
+      });
+      existingTexts.push(lower);
+      added++;
+    }
+
+    saveActionItems(data);
+    console.log(`[action-items/generate] ${added} new items added, ${data.items.length} total`);
+    res.json({ items: data.items });
+  } catch (err) {
+    console.error('[action-items/generate] ERROR:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.patch('/api/action-items/:id/complete', (req, res) => {
+  const data = loadActionItems();
+  const item = data.items.find(i => i.id === req.params.id);
+  if (!item) return res.status(404).json({ error: 'Item not found' });
+  item.completed = true;
+  item.completedAt = new Date().toISOString();
+  saveActionItems(data);
+  res.json({ ok: true, item });
+});
+
+app.patch('/api/action-items/:id/uncomplete', (req, res) => {
+  const data = loadActionItems();
+  const item = data.items.find(i => i.id === req.params.id);
+  if (!item) return res.status(404).json({ error: 'Item not found' });
+  item.completed = false;
+  item.completedAt = null;
+  saveActionItems(data);
+  res.json({ ok: true, item });
+});
+
+app.post('/api/action-items/archive', (_req, res) => {
+  const data = loadActionItems();
+  const today = new Date().toISOString().split('T')[0];
+  const completed = data.items.filter(i => i.completed);
+  if (completed.length === 0) return res.json({ ok: true, archived: 0 });
+
+  if (!data.archive) data.archive = {};
+  if (!data.archive[today]) data.archive[today] = [];
+  data.archive[today].push(...completed);
+  data.items = data.items.filter(i => !i.completed);
+  saveActionItems(data);
+  res.json({ ok: true, archived: completed.length });
+});
+
+app.get('/api/action-items/archive', (_req, res) => {
+  const data = loadActionItems();
+  res.json({ archive: data.archive || {} });
+});
+
+// Post-call follow-up detection — runs every 5 minutes
+function checkPostCallFollowUps() {
+  try {
+    const events = getCached('calendar');
+    if (!events || events.length === 0) return;
+
+    const now = Date.now();
+    const fiveMin = 5 * 60 * 1000;
+    const data = loadActionItems();
+    let added = 0;
+
+    for (const evt of events) {
+      if (!evt.end || !evt.attendees || evt.attendees.length === 0) continue;
+      const endTime = new Date(evt.end).getTime();
+      if (endTime > now - fiveMin && endTime <= now) {
+        const followUpText = `\u{1F4DE} ${evt.title} just ended — want to send a follow-up?`;
+        const alreadyExists = data.items.some(i => i.text === followUpText);
+        if (!alreadyExists) {
+          data.items.unshift({
+            id: randomUUID(),
+            text: followUpText,
+            source: 'calendar',
+            sourceId: evt.id,
+            createdAt: new Date().toISOString(),
+            completedAt: null,
+            completed: false,
+          });
+          added++;
+        }
+      }
+    }
+
+    if (added > 0) {
+      saveActionItems(data);
+      console.log(`[post-call] Added ${added} follow-up item(s)`);
+    }
+  } catch (err) {
+    console.error('[post-call] Error:', err.message);
+  }
+}
+
+// Midnight auto-archive
+function checkMidnightArchive() {
+  const now = new Date();
+  if (now.getHours() === 0 && now.getMinutes() === 0) {
+    console.log('[auto-archive] Running midnight archive');
+    const data = loadActionItems();
+    const yesterday = new Date(now.getTime() - 86400000).toISOString().split('T')[0];
+    const completed = data.items.filter(i => i.completed);
+    if (completed.length > 0) {
+      if (!data.archive) data.archive = {};
+      if (!data.archive[yesterday]) data.archive[yesterday] = [];
+      data.archive[yesterday].push(...completed);
+      data.items = data.items.filter(i => !i.completed);
+      saveActionItems(data);
+      console.log(`[auto-archive] Archived ${completed.length} items under ${yesterday}`);
+    }
+  }
+}
+
 // ── Start ───────────────────────────────────────────────────────────────────
 
 app.listen(PORT, async () => {
@@ -490,4 +700,10 @@ app.listen(PORT, async () => {
   } catch (err) {
     console.error('  [!] MCP pre-connect failed — will retry on first request');
   }
+
+  // Post-call follow-up detection every 5 minutes
+  setInterval(checkPostCallFollowUps, 5 * 60 * 1000);
+  // Midnight auto-archive check every 60 seconds
+  setInterval(checkMidnightArchive, 60 * 1000);
+  console.log('  Intervals: post-call follow-ups (5m), midnight archive (60s)');
 });

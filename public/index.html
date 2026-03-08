@@ -736,6 +736,111 @@
         height: 8px;
       }
 
+      /* ── Action Items ─────────────────────────── */
+
+      .action-items-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-top: 20px;
+      }
+
+      .btn-generate {
+        font-family: inherit;
+        font-size: 0.55rem;
+        font-weight: 400;
+        color: var(--muted);
+        background: transparent;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 3px 10px;
+        cursor: pointer;
+        transition: color 0.15s, border-color 0.15s;
+      }
+
+      .btn-generate:hover {
+        color: var(--text);
+        border-color: var(--muted);
+      }
+
+      .btn-generate:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+
+      .action-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 13px;
+        font-weight: 300;
+        line-height: 1.5;
+      }
+
+      .action-item input[type="checkbox"] {
+        display: none;
+      }
+
+      .action-item .checkbox-custom {
+        width: 13px;
+        height: 13px;
+        border: 1.5px solid var(--accent);
+        border-radius: 2px;
+        background: var(--bg);
+        cursor: pointer;
+        flex-shrink: 0;
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.15s, border-color 0.15s;
+      }
+
+      .action-item .checkbox-custom .tick {
+        display: none;
+        color: var(--bg);
+        font-size: 9px;
+        font-weight: 700;
+        line-height: 1;
+      }
+
+      .action-item.completed .checkbox-custom {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+
+      .action-item.completed .checkbox-custom .tick {
+        display: block;
+      }
+
+      .action-item-text {
+        color: var(--text);
+      }
+
+      .action-item.completed .action-item-text {
+        text-decoration: line-through;
+        color: var(--text-faded);
+      }
+
+      .action-item.completed {
+        opacity: 0.5;
+      }
+
+      .action-item.follow-up {
+        border-left: 2px solid var(--accent);
+        padding-left: 8px;
+        background: #7c9e8a0d;
+      }
+
+      .action-items-empty {
+        font-size: 12px;
+        color: var(--text-faded);
+        font-weight: 300;
+        padding: 8px 0;
+      }
+
       ::-webkit-scrollbar {
         width: 4px;
       }
@@ -757,6 +862,7 @@
       <div class="header-greeting" id="greeting">Good morning, Milette</div>
       <div style="display:flex;align-items:center;gap:16px">
         <div class="header-date" id="headerDate"></div>
+        <a href="/archive.html" class="toolkit-link">Archive</a>
         <a href="/toolkit.html" class="toolkit-link">Toolkit</a>
       </div>
     </header>
@@ -770,6 +876,14 @@
           <div class="skeleton-bar w-80"></div>
           <div class="skeleton-bar w-60"></div>
         </div>
+      </div>
+
+      <div class="action-items-header">
+        <div class="section-label">Action Items</div>
+        <button class="btn-generate" id="btnGenerate" onclick="generateActionItems()">Generate</button>
+      </div>
+      <div id="actionItemsList">
+        <div class="action-items-empty">Loading...</div>
       </div>
     </div>
 
@@ -840,6 +954,7 @@
       let expandedEmail = null;
       let chatMessages = [];
       let isSending = false;
+      let actionItems = [];
 
       // ── Init ───────────────────────────────────────
       const now = new Date();
@@ -863,6 +978,7 @@
 
       marked.setOptions({ breaks: true, gfm: true });
       refreshData();
+      fetchActionItems().then(() => generateActionItems());
 
       // ── Data Fetching ──────────────────────────────
       function refreshData() {
@@ -925,6 +1041,85 @@
           console.error("[fetchCalendar] FETCH ERROR:", err);
           listEl.innerHTML =
             '<div class="agenda-empty">Could not load calendar.</div>';
+        }
+      }
+
+      // ── Action Items ────────────────────────────────
+      async function fetchActionItems() {
+        try {
+          const res = await fetch("/api/action-items");
+          const data = await res.json();
+          actionItems = data.items || [];
+          renderActionItems();
+        } catch (err) {
+          console.error("[fetchActionItems] ERROR:", err);
+        }
+      }
+
+      async function generateActionItems() {
+        const btn = document.getElementById("btnGenerate");
+        btn.textContent = "Generating...";
+        btn.disabled = true;
+        try {
+          const res = await fetch("/api/action-items/generate", { method: "POST" });
+          const data = await res.json();
+          if (data.items) {
+            actionItems = data.items;
+            renderActionItems();
+          }
+        } catch (err) {
+          console.error("[generateActionItems] ERROR:", err);
+        } finally {
+          btn.textContent = "Generate";
+          btn.disabled = false;
+        }
+      }
+
+      function renderActionItems() {
+        const el = document.getElementById("actionItemsList");
+        if (actionItems.length === 0) {
+          el.innerHTML = '<div class="action-items-empty">No action items yet. Hit Generate to extract them from your emails and calendar.</div>';
+          return;
+        }
+
+        // Sort: follow-ups first, then incomplete, then completed
+        const sorted = [...actionItems].sort((a, b) => {
+          if (a.source === "calendar" && b.source !== "calendar") return -1;
+          if (b.source === "calendar" && a.source !== "calendar") return 1;
+          if (a.completed !== b.completed) return a.completed ? 1 : -1;
+          return 0;
+        });
+
+        el.innerHTML = sorted.map(item => {
+          const isFollowUp = item.source === "calendar";
+          const classes = ["action-item"];
+          if (item.completed) classes.push("completed");
+          if (isFollowUp) classes.push("follow-up");
+
+          return `
+            <div class="${classes.join(" ")}">
+              <label class="checkbox-custom" onclick="toggleActionItem('${item.id}', ${!item.completed})">
+                <span class="tick">\u2713</span>
+              </label>
+              <span class="action-item-text">${esc(item.text)}</span>
+            </div>
+          `;
+        }).join("");
+      }
+
+      async function toggleActionItem(id, completed) {
+        const endpoint = completed ? "complete" : "uncomplete";
+        try {
+          await fetch(`/api/action-items/${id}/${endpoint}`, { method: "PATCH" });
+          const item = actionItems.find(i => i.id === id);
+          if (item) {
+            item.completed = completed;
+            item.completedAt = completed ? new Date().toISOString() : null;
+            renderActionItems();
+          }
+        } catch (err) {
+          console.error("[toggleActionItem] ERROR:", err);
+          fetchActionItems();
         }
       }
 
