@@ -44,6 +44,13 @@
     "If the reply can be said in 2 sentences, say it in 2 sentences",
     "Positive energy should come through word choice, not through extra sentences"
   ],
+  "urgencyRules": [
+    { "type": "intro", "label": "Reply to intros", "idealHours": 2, "hardHours": 24 },
+    { "type": "post-call", "label": "Post-call follow-up", "idealHours": 2, "hardHours": 24 },
+    { "type": "default", "label": "All emails", "idealHours": 24, "hardHours": 120 },
+    { "type": "stale", "label": "Older than 5 working days", "note": "Bump to urgent" },
+    { "type": "apology", "label": "Older than 2 weeks", "thresholdHours": 336, "note": "Prepend apology to draft: Apologies for the delay here —" }
+  ],
   "bannedPhrases": [
     "I hope this finds you well",
     "Certainly",

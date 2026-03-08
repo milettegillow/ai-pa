@@ -50,6 +50,22 @@ function saveActionItems(data) {
   writeFileSync(actionItemsPath, JSON.stringify(data, null, 2) + '\n');
 }
 
+// Follow-ups & blockers config
+const followUpsPath = join(__dirname, 'follow-ups.json');
+
+function loadFollowUps() {
+  if (!existsSync(followUpsPath)) return { followUps: [], blockers: [] };
+  try {
+    return JSON.parse(readFileSync(followUpsPath, 'utf-8'));
+  } catch {
+    return { followUps: [], blockers: [] };
+  }
+}
+
+function saveFollowUps(data) {
+  writeFileSync(followUpsPath, JSON.stringify(data, null, 2) + '\n');
+}
+
 const DEFAULT_WRITING_RULES = [
   'Always use UK English',
   'Never use em dashes (\u2014)',
@@ -140,12 +156,12 @@ function setCache(key, data) {
 
 let chatSessionId = null;
 
-async function runQuery(prompt, resumeSessionId = null) {
+async function runQuery(prompt, resumeSessionId = null, systemPromptOverride = null) {
   let result = '';
   let sessionId = null;
 
   const options = {
-    systemPrompt,
+    systemPrompt: systemPromptOverride || systemPrompt,
     mcpServers: mcpConfig.mcpServers,
     tools: [],
     permissionMode: 'bypassPermissions',
@@ -198,8 +214,9 @@ app.get('/api/toolkit', (_req, res) => {
 });
 
 app.post('/api/toolkit', (req, res) => {
-  const { blurb, links, writingRules, bannedPhrases } = req.body;
-  saveToolkit({ blurb, links, writingRules, bannedPhrases });
+  const { blurb, links, writingRules, bannedPhrases, urgencyRules } = req.body;
+  const existing = loadToolkit();
+  saveToolkit({ blurb, links, writingRules, bannedPhrases, urgencyRules: urgencyRules || existing.urgencyRules });
   res.json({ ok: true });
 });
 
@@ -235,7 +252,42 @@ app.post('/api/chat', async (req, res) => {
     const { message } = req.body;
     if (!message) return res.status(400).json({ error: 'message is required' });
 
-    const { result, sessionId } = await runQuery(message, chatSessionId);
+    // Enrich system prompt with follow-ups, blockers, and toolkit context
+    const fuData = loadFollowUps();
+    const toolkit = loadToolkit();
+    const followUpsList = fuData.followUps.filter(f => !f.completed).map(f => {
+      const text = f.text || f.name || '';
+      const email = f.recipientEmail || f.email || '';
+      return `- [${f.type || 'follow-up'}] ${text}${email ? ` (${email})` : ''}${f.dueDate ? ` [due: ${f.dueDate}]` : ''}`;
+    }).join('\n');
+    const blockersList = fuData.blockers.filter(b => !b.completed).map(b =>
+      `- ${b.name}: ${b.task}`
+    ).join('\n');
+    const linksList = (toolkit.links || []).map(l => `- ${l.label}: ${l.url}`).join('\n');
+
+    const enrichedPrompt = systemPrompt + `
+
+## Follow-ups
+These are Milette's pending follow-ups. When she asks to "send a follow-up to [name]" or "email [name] about [task]", use this data to find the right person and their email address. Draft the email and show it for approval before sending.
+
+${followUpsList || '(none)'}
+
+## Blockers
+${blockersList || '(none)'}
+
+## Available links
+When drafting emails, include relevant links from this list:
+${linksList || '(none)'}
+
+## Follow-up email handling
+When Milette asks you to send a follow-up email:
+1. Look up the person in the follow-ups list above
+2. If they have an email address, draft the email to that address
+3. Include any relevant links from the available links list
+4. Show the draft clearly formatted (To, Subject, Body) and wait for approval
+5. Follow all standard email rules (UK English, no em dashes, sign off "All the best, Milette")`;
+
+    const { result, sessionId } = await runQuery(message, chatSessionId, enrichedPrompt);
     if (sessionId) chatSessionId = sessionId;
 
     res.json({ response: result });
@@ -265,6 +317,48 @@ app.post('/api/emails/:id/read', async (req, res) => {
   }
 });
 
+// Convert raw URLs in draft text to markdown-style links with friendly labels
+function formatDraftLinks(text) {
+  const toolkit = loadToolkit();
+  const linkMap = {};
+  if (toolkit.links?.length) {
+    for (const link of toolkit.links) {
+      linkMap[link.url] = link.label;
+    }
+  }
+
+  // Temporarily replace existing markdown links with placeholders
+  const existingLinks = [];
+  let result = text.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, (match) => {
+    existingLinks.push(match);
+    return `__MDLINK_${existingLinks.length - 1}__`;
+  });
+
+  // Replace raw URLs with markdown links
+  result = result.replace(/https?:\/\/[^\s)]+/g, (url) => {
+    let label = null;
+    for (const [knownUrl, knownLabel] of Object.entries(linkMap)) {
+      if (url.startsWith(knownUrl) || knownUrl.startsWith(url)) {
+        label = knownLabel;
+        break;
+      }
+    }
+    if (!label) {
+      try {
+        const domain = new URL(url).hostname.replace(/^www\./, '');
+        label = domain;
+      } catch {
+        label = 'link';
+      }
+    }
+    return `[${label}](${url})`;
+  });
+
+  // Restore existing markdown links
+  result = result.replace(/__MDLINK_(\d+)__/g, (_, i) => existingLinks[parseInt(i)]);
+  return result;
+}
+
 // Convert plain text draft to HTML with proper line breaks and hyperlinks
 function draftToHtml(text) {
   // Build a map of known URLs to friendly labels from toolkit
@@ -282,8 +376,13 @@ function draftToHtml(text) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 
-  // Replace URLs with anchor tags — match known toolkit links first, then generic URLs
-  html = html.replace(/https?:\/\/[^\s<>&)]+/g, (url) => {
+  // First: convert markdown-style links [label](url) to <a> tags
+  html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, (_, label, url) => {
+    return `<a href="${url}">${label}</a>`;
+  });
+
+  // Then: replace any remaining raw URLs with anchor tags
+  html = html.replace(/(?<!href=")https?:\/\/[^\s<>&)]+/g, (url) => {
     // Decode the escaped URL for matching
     const decoded = url.replace(/&amp;/g, '&');
     // Check if this URL matches a known toolkit link
@@ -444,7 +543,60 @@ Return ONLY the JSON array, nothing else.`;
     }
 
     console.log('[analyse] Parsed options:', options);
-    res.json({ options });
+
+    // Step 2: Check for missing links
+    let missingLink = null;
+    try {
+      const linkList = toolkit.links?.length
+        ? toolkit.links.map(l => `- ${l.label}: ${l.url}`).join('\n')
+        : '(none)';
+
+      const linkPrompt = `Here is an email Milette needs to reply to:
+
+From: ${sender} <${senderEmail || ''}>
+Subject: ${subject}
+Body: ${latestMessage || '(no content)'}
+
+Here are the links Milette already has in her toolkit:
+${linkList}
+
+Would a good reply to this email require a specific link that is NOT already in the toolkit above? For example: a pricing page, a specific event registration link, a document, a form, an application link, etc.
+
+If YES — return a JSON object: {"missingLink": "brief description of what link is needed"}
+If NO — return: {"missingLink": null}
+
+Return ONLY the JSON object, nothing else.`;
+
+      let linkResult = '';
+      for await (const message of query({ prompt: linkPrompt, options: {
+        systemPrompt: `You are an email analysis assistant. Determine if a reply would require a specific link or URL that isn't already available. Only flag genuinely missing links — don't flag links that aren't needed for the reply. Be conservative: if the reply can be written without a specific link, return null.${context}`,
+        tools: [],
+        permissionMode: 'bypassPermissions',
+        allowDangerouslySkipPermissions: true,
+        maxTurns: 1,
+      }})) {
+        if ('result' in message) {
+          linkResult = message.result;
+        }
+      }
+
+      try {
+        const jsonMatch = linkResult.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (parsed.missingLink) {
+            missingLink = parsed.missingLink;
+          }
+        }
+      } catch (e) {
+        console.error('[analyse] Failed to parse link check:', e.message);
+      }
+    } catch (e) {
+      console.error('[analyse] Link check failed:', e.message);
+    }
+
+    console.log('[analyse] Missing link:', missingLink);
+    res.json({ options, missingLink });
   } catch (err) {
     console.error('[/api/emails/:id/analyse] ERROR:', err.message);
     res.status(500).json({ error: err.message });
@@ -453,7 +605,7 @@ Return ONLY the JSON array, nothing else.`;
 
 app.post('/api/emails/:id/draft-reply', async (req, res) => {
   try {
-    const { sender, senderEmail, subject, preview, instruction } = req.body;
+    const { sender, senderEmail, subject, preview, instruction, additionalLinks, receivedAt } = req.body;
     if (!sender || !subject) {
       return res.status(400).json({ error: 'sender and subject are required' });
     }
@@ -468,10 +620,22 @@ app.post('/api/emails/:id/draft-reply', async (req, res) => {
     if (toolkit.links?.length) {
       fullPrompt += '\n\n## Key Links\n\n' + toolkit.links.map(l => `- ${l.label}: ${l.url}`).join('\n');
     }
+    if (additionalLinks?.length) {
+      fullPrompt += '\n\n## Additional Links (provided by user for this reply)\n\n' + additionalLinks.map(l => `- ${l}`).join('\n');
+    }
     const rules = toolkit.writingRules || DEFAULT_WRITING_RULES;
     fullPrompt += '\n\n## Writing Rules\n\n' + rules.map(r => `- ${r}`).join('\n');
     if (toolkit.bannedPhrases?.length) {
       fullPrompt += '\n\n## Banned Phrases (NEVER use these)\n\n' + toolkit.bannedPhrases.map(p => `- "${p}"`).join('\n');
+    }
+
+    // Check if email is older than 2 weeks — prepend apology instruction
+    let apologyPrefix = '';
+    if (receivedAt) {
+      const ageHours = (Date.now() - new Date(receivedAt).getTime()) / (1000 * 60 * 60);
+      if (ageHours >= 336) {
+        apologyPrefix = '\n\nIMPORTANT: This email is over 2 weeks old. Start the reply with "Apologies for the delay here — " before the main content.';
+      }
     }
 
     let userPrompt = `Draft a reply to this email:
@@ -484,6 +648,7 @@ Body: ${preview || '(no preview available)'}`;
       userPrompt += `\n\nThe user wants to: ${instruction}. Draft the reply accordingly.`;
     }
 
+    userPrompt += apologyPrefix;
     userPrompt += '\n\nWrite ONLY the reply body text. No subject line, no headers, no explanation.';
 
     let draft = '';
@@ -498,6 +663,9 @@ Body: ${preview || '(no preview available)'}`;
         draft = message.result;
       }
     }
+
+    // Post-process: convert raw URLs to markdown-style links with friendly labels
+    draft = formatDraftLinks(draft);
 
     res.json({ draft });
   } catch (err) {
@@ -690,6 +858,50 @@ app.get('/api/action-items', (_req, res) => {
   res.json({ items: data.items || [] });
 });
 
+// Match action item text to a source email using sender name, email address, and subject keywords
+function matchItemToEmail(itemText, emailList) {
+  const lower = itemText.toLowerCase();
+  let bestMatch = null;
+  let bestScore = 0;
+
+  for (const email of emailList) {
+    let score = 0;
+    const senderFull = (email.sender || '').toLowerCase();
+    const senderFirst = senderFull.split(' ')[0];
+    const senderLast = senderFull.split(' ').slice(-1)[0];
+    const senderEmail = (email.senderEmail || '').toLowerCase();
+    const subject = (email.subject || '').toLowerCase();
+
+    // Check sender first name (min 3 chars to avoid false positives)
+    if (senderFirst.length >= 3 && lower.includes(senderFirst)) score += 3;
+    // Check sender last name
+    if (senderLast.length >= 3 && senderLast !== senderFirst && lower.includes(senderLast)) score += 2;
+    // Check sender email address
+    if (senderEmail && lower.includes(senderEmail)) score += 4;
+    // Check for subject keywords (at least 2 words matching)
+    const subjectWords = subject.split(/\s+/).filter(w => w.length >= 4);
+    const subjectMatches = subjectWords.filter(w => lower.includes(w)).length;
+    if (subjectMatches >= 2) score += 2;
+
+    // Check for company/org names in parentheses from sender, e.g. "Christa (Apple)"
+    const orgMatch = email.senderEmail?.match(/@(.+?)\./);
+    if (orgMatch) {
+      const org = orgMatch[1].toLowerCase();
+      if (org.length >= 3 && !['gmail', 'yahoo', 'hotmail', 'outlook', 'live', 'icloud'].includes(org) && lower.includes(org)) {
+        score += 1;
+      }
+    }
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = email;
+    }
+  }
+
+  // Require at least a first-name match (score >= 3)
+  return bestScore >= 3 ? bestMatch : null;
+}
+
 app.post('/api/action-items/generate', async (_req, res) => {
   try {
     // Gather current emails and calendar from cache or fetch
@@ -712,20 +924,51 @@ app.post('/api/action-items/generate', async (_req, res) => {
     }
 
     const data = loadActionItems();
+
+    // Backfill: for items missing receivedAt, match against current emails
+    let backfilled = 0;
+    for (const item of data.items) {
+      if (item.receivedAt || item.source === 'calendar') continue;
+      const matched = matchItemToEmail(item.text, emailList);
+      if (matched) {
+        item.receivedAt = matched.time;
+        item.sourceId = matched.id;
+        backfilled++;
+      }
+    }
+    if (backfilled > 0) {
+      saveActionItems(data);
+      console.log(`[action-items/generate] Backfilled receivedAt for ${backfilled} items`);
+    }
+
     const existingTexts = (data.items || []).map(i => i.text.toLowerCase());
 
     const toolkit = loadToolkit();
     const context = toolkit.blurb ? `\n\nContext about Milette's company: ${toolkit.blurb}` : '';
 
-    const emailSummary = emailList.map(e => `- From: ${e.sender} (${e.senderEmail}) | Subject: ${e.subject} | Preview: ${e.preview}`).join('\n');
+    const emailSummary = emailList.map(e => `- [ID:${e.id}] From: ${e.sender} (${e.senderEmail}) | Subject: ${e.subject} | receivedDateTime: ${e.time} | Preview: ${e.preview}`).join('\n');
     const calSummary = eventList.map(e => `- ${e.title} (${new Date(e.start).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}–${new Date(e.end).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })})`).join('\n');
     const existingSummary = existingTexts.length ? '\n\nExisting action items (DO NOT duplicate these):\n' + existingTexts.map(t => `- ${t}`).join('\n') : '';
 
-    const prompt = `Here are Milette's unread emails:\n${emailSummary || '(none)'}\n\nHere is today's calendar:\n${calSummary || '(none)'}${existingSummary}\n\nExtract action items — things Milette needs to do, reply to, follow up on, or prepare for. Be specific with names and context (e.g. "Reply to Gabrielle at Aldea re: intro" not "Reply to email").`;
+    const prompt = `Here are Milette's unread emails:\n${emailSummary || '(none)'}\n\nHere is today's calendar:\n${calSummary || '(none)'}${existingSummary}\n\nExtract action items — things Milette needs to do, reply to, follow up on, or prepare for. Be specific with names and context (e.g. "Reply to Gabrielle at Aldea re: intro" not "Reply to email").
+
+IMPORTANT: When an action item implies creating, preparing, or drafting something (a proposal, contract, deck, doc, etc.), always use the format "[action] [asset] for [context]" where context is the person, event, or purpose. Examples:
+- "Create event proposal for April Event Collab"
+- "Prepare sponsorship contract for PulpaTronics"
+- "Draft pricing doc for Marc at X"
+NEVER write vague items like "Create proposal" or "Prepare contract" — always include the specific context.
+
+For each item, return a JSON object with:
+- "text": the action item description
+- "sourceId": the email ID (the [ID:...] value) this item came from, or "" for calendar items
+- "receivedAt": copy the EXACT receivedDateTime string from the email, or null for calendar items
+- "isIntro": true if this is an introduction/intro email
+
+Return ONLY a valid JSON array of objects like: [{"text": "Reply to ...", "sourceId": "AAMk...", "receivedAt": "2026-03-06T10:00:00Z", "isIntro": false}]`;
 
     let rawResult = '';
     for await (const message of query({ prompt, options: {
-      systemPrompt: `You are Milette's personal assistant. Extract action items from her emails and calendar. Return ONLY a valid JSON array of strings. Each string should be a specific, actionable task. No explanation, no markdown, just the JSON array.${context}`,
+      systemPrompt: `You are Milette's personal assistant. Extract action items from her emails and calendar. Return ONLY a valid JSON array of objects with "text", "sourceId" (the email's [ID:...] value, or "" for calendar), "receivedAt" (copy the EXACT receivedDateTime string from the email, or null for calendar), and "isIntro" (boolean — true if the email is an introduction between people). No explanation, no markdown, just the JSON array.${context}`,
       tools: [],
       permissionMode: 'bypassPermissions',
       allowDangerouslySkipPermissions: true,
@@ -750,18 +993,35 @@ app.post('/api/action-items/generate', async (_req, res) => {
 
     // Deduplicate and add new items
     let added = 0;
-    for (const text of newItems) {
+    for (const raw of newItems) {
+      // Support both string[] (legacy) and object[] (new)
+      const text = typeof raw === 'string' ? raw : raw?.text;
+      let sourceId = typeof raw === 'object' ? raw?.sourceId || '' : '';
+      let receivedAt = typeof raw === 'object' ? raw?.receivedAt || null : null;
+      const isIntro = typeof raw === 'object' ? !!raw?.isIntro : false;
       if (typeof text !== 'string' || !text.trim()) continue;
       const lower = text.trim().toLowerCase();
       if (existingTexts.includes(lower)) continue;
+
+      // Server-side matching as fallback when Claude didn't return receivedAt
+      if (!receivedAt) {
+        const matched = matchItemToEmail(text, emailList);
+        if (matched) {
+          receivedAt = matched.time;
+          sourceId = sourceId || matched.id;
+        }
+      }
+
       data.items.push({
         id: randomUUID(),
         text: text.trim(),
         source: 'email',
-        sourceId: '',
+        sourceId,
         createdAt: new Date().toISOString(),
         completedAt: null,
         completed: false,
+        receivedAt: receivedAt || null,
+        isIntro: isIntro,
       });
       existingTexts.push(lower);
       added++;
@@ -796,6 +1056,17 @@ app.patch('/api/action-items/:id/uncomplete', (req, res) => {
   res.json({ ok: true, item });
 });
 
+app.patch('/api/action-items/:id/text', (req, res) => {
+  const { text } = req.body;
+  if (!text || !text.trim()) return res.status(400).json({ error: 'text is required' });
+  const data = loadActionItems();
+  const item = data.items.find(i => i.id === req.params.id);
+  if (!item) return res.status(404).json({ error: 'Item not found' });
+  item.text = text.trim();
+  saveActionItems(data);
+  res.json({ ok: true, item });
+});
+
 app.post('/api/action-items/archive', (_req, res) => {
   const data = loadActionItems();
   const today = new Date().toISOString().split('T')[0];
@@ -813,6 +1084,335 @@ app.post('/api/action-items/archive', (_req, res) => {
 app.get('/api/action-items/archive', (_req, res) => {
   const data = loadActionItems();
   res.json({ archive: data.archive || {} });
+});
+
+// Generate blocker suggestions from action items
+app.post('/api/blockers/generate', async (_req, res) => {
+  try {
+    const actionData = loadActionItems();
+    const fuData = loadFollowUps();
+    const toolkit = loadToolkit();
+
+    const incompleteItems = (actionData.items || []).filter(i => !i.completed);
+    const existingBlockers = (fuData.blockers || []).map(b => b.name.toLowerCase());
+    const toolkitLinks = (toolkit.links || []).map(l => `- ${l.label}: ${l.url}`).join('\n');
+
+    const itemsList = incompleteItems.map(i => `- ${i.text}`).join('\n');
+
+    const prompt = `Here are Milette's current action items:\n${itemsList || '(none)'}\n\nHere are the links/assets already available in her toolkit:\n${toolkitLinks || '(none)'}\n\nHere are her existing blockers (do NOT suggest these again):\n${existingBlockers.map(b => `- ${b}`).join('\n') || '(none)'}\n\nIdentify action items that require an asset Milette doesn't already have — things like proposals, contracts, decks, forms, graphics, invoices, or documents that need to be created before the action item can be completed.\n\nFor each missing asset, return a blocker in the format "[action] [asset] for [context]". Always include the specific context (person, event, or purpose). Never return vague blockers like "Create proposal" — always say "Create event proposal for April Event Collab".\n\nReturn ONLY a valid JSON array of objects like: [{"text": "Create event proposal for April Event Collab", "impliedBy": "Send event proposal to Bidisa Mukherjee for April Event Collab sponsorship outreach"}]\n\nIf there are no missing assets, return an empty array: []`;
+
+    let rawResult = '';
+    for await (const message of query({ prompt, options: {
+      systemPrompt: `You are Milette's personal assistant. Analyse her action items to find implied blockers — assets or documents that need to be created before action items can be completed. Return ONLY a valid JSON array. No explanation, no markdown.`,
+      tools: [],
+      permissionMode: 'bypassPermissions',
+      allowDangerouslySkipPermissions: true,
+      maxTurns: 1,
+    }})) {
+      if ('result' in message) rawResult = message.result;
+    }
+
+    let suggestions = [];
+    try {
+      const jsonMatch = rawResult.match(/\[[\s\S]*\]/);
+      if (jsonMatch) suggestions = JSON.parse(jsonMatch[0]);
+    } catch (e) {
+      console.error('[blockers/generate] Failed to parse:', e.message);
+      return res.status(500).json({ error: 'Failed to parse blocker suggestions' });
+    }
+
+    // Filter out duplicates of existing blockers
+    suggestions = suggestions.filter(s => {
+      const lower = (s.text || '').toLowerCase();
+      return lower && !existingBlockers.includes(lower);
+    });
+
+    console.log(`[blockers/generate] ${suggestions.length} suggestions`);
+    res.json({ suggestions });
+  } catch (err) {
+    console.error('[blockers/generate] ERROR:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Generate follow-up suggestions from calendar + sent emails
+app.post('/api/followups/generate', async (_req, res) => {
+  try {
+    const fuData = loadFollowUps();
+    const existingTexts = (fuData.followUps || []).map(f => (f.text || f.name || '').toLowerCase());
+
+    // ── Part A: Post-call follow-ups from calendar ──
+    const events = getCached('calendar') || [];
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    // Events that have ended today with attendees
+    const endedEvents = events.filter(evt => {
+      if (!evt.end || !evt.attendees || evt.attendees.length === 0) return false;
+      const endTime = new Date(evt.end);
+      return endTime <= now && evt.start && evt.start.split('T')[0] === todayStr;
+    });
+
+    const postCallSuggestions = endedEvents.map(evt => ({
+      type: 'post-call',
+      text: `Follow up with ${evt.attendees[0]} after ${evt.title}`,
+      dueDate: todayStr,
+      recipientEmail: '',
+      confidence: null,
+      source: evt.title,
+    })).filter(s => !existingTexts.includes(s.text.toLowerCase()));
+
+    // ── Part B: Awaiting-reply from sent emails ──
+    let awaitingSuggestions = [];
+    try {
+      // Fetch recent sent emails (last 7 days)
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const sentResult = await callTool('list-mail-folder-messages', {
+        mailFolderId: 'SentItems',
+        filter: `sentDateTime ge ${sevenDaysAgo}`,
+        top: 30,
+        orderby: ['sentDateTime desc'],
+        select: ['id', 'subject', 'toRecipients', 'sentDateTime', 'bodyPreview', 'conversationId'],
+      });
+
+      let sentEmails = [];
+      if (sentResult?.content?.[0]?.text) {
+        try { sentEmails = JSON.parse(sentResult.content[0].text); } catch {}
+        if (!Array.isArray(sentEmails) && sentEmails?.value) sentEmails = sentEmails.value;
+      }
+
+      // Fetch recent inbox to cross-reference replies
+      const inboxResult = await callTool('list-mail-folder-messages', {
+        mailFolderId: 'Inbox',
+        filter: `receivedDateTime ge ${sevenDaysAgo}`,
+        top: 50,
+        orderby: ['receivedDateTime desc'],
+        select: ['id', 'subject', 'from', 'receivedDateTime', 'conversationId'],
+      });
+
+      let inboxEmails = [];
+      if (inboxResult?.content?.[0]?.text) {
+        try { inboxEmails = JSON.parse(inboxResult.content[0].text); } catch {}
+        if (!Array.isArray(inboxEmails) && inboxEmails?.value) inboxEmails = inboxEmails.value;
+      }
+
+      // Find sent emails with no reply (by conversationId)
+      const repliedConversations = new Set(inboxEmails.map(e => e.conversationId).filter(Boolean));
+      const unreplied = sentEmails.filter(e => e.conversationId && !repliedConversations.has(e.conversationId));
+
+      if (unreplied.length > 0) {
+        // Ask Claude to analyse which ones need follow-up
+        const emailSummaries = unreplied.slice(0, 15).map(e => {
+          const to = (e.toRecipients || []).map(r => r?.emailAddress?.name || r?.emailAddress?.address || '').join(', ');
+          return `- To: ${to} | Subject: ${e.subject || '(no subject)'} | Sent: ${e.sentDateTime || ''} | Preview: ${(e.bodyPreview || '').slice(0, 100)}`;
+        }).join('\n');
+
+        let rawResult = '';
+        for await (const message of query({ prompt: `Here are Milette's sent emails from the last 7 days that haven't received a reply:\n\n${emailSummaries}\n\nFor each email, decide if Milette should follow up. Consider:\n- Is it a request that expects a response?\n- Has enough time passed (2+ days)?\n- Is it just a "thanks" or FYI that doesn't need a reply?\n\nReturn ONLY a valid JSON array of objects for emails that DO need follow-up:\n[{"text": "Follow up with [Name] re: [subject/context]", "recipientEmail": "email@example.com", "confidence": "definite|likely|maybe", "sentDate": "ISO date"}]\n\nIf none need follow-up, return: []`, options: {
+          systemPrompt: 'You are Milette\'s personal assistant. Analyse sent emails to identify ones awaiting a reply. Return ONLY valid JSON. No explanation, no markdown.',
+          tools: [],
+          permissionMode: 'bypassPermissions',
+          allowDangerouslySkipPermissions: true,
+          maxTurns: 1,
+        }})) {
+          if ('result' in message) rawResult = message.result;
+        }
+
+        try {
+          const jsonMatch = rawResult.match(/\[[\s\S]*\]/);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            awaitingSuggestions = parsed.map(s => ({
+              type: 'awaiting-reply',
+              text: s.text || '',
+              recipientEmail: s.recipientEmail || '',
+              confidence: s.confidence || 'maybe',
+              dueDate: null,
+              source: 'sent-email',
+            })).filter(s => s.text && !existingTexts.includes(s.text.toLowerCase()));
+          }
+        } catch (e) {
+          console.error('[followups/generate] Failed to parse awaiting-reply:', e.message);
+        }
+      }
+    } catch (err) {
+      console.error('[followups/generate] Error fetching sent emails:', err.message);
+      // Continue with just post-call suggestions
+    }
+
+    const suggestions = [...postCallSuggestions, ...awaitingSuggestions];
+    console.log(`[followups/generate] ${postCallSuggestions.length} post-call, ${awaitingSuggestions.length} awaiting-reply`);
+    res.json({ suggestions });
+  } catch (err) {
+    console.error('[followups/generate] ERROR:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Follow-ups & Blockers endpoints ──────────────────────────────────────────
+
+app.get('/api/follow-ups', (_req, res) => {
+  const data = loadFollowUps();
+  res.json(data);
+});
+
+app.patch('/api/follow-ups/:id/text', (req, res) => {
+  const { name, task, text } = req.body;
+  const data = loadFollowUps();
+  const item = [...data.followUps, ...data.blockers].find(i => i.id === req.params.id);
+  if (!item) return res.status(404).json({ error: 'Item not found' });
+  // Support both new format (text) and old format (name/task) for blockers
+  if (text !== undefined) item.text = text.trim();
+  if (name !== undefined) item.name = name.trim();
+  if (task !== undefined) item.task = task.trim();
+  saveFollowUps(data);
+  res.json({ ok: true, item });
+});
+
+app.patch('/api/follow-ups/:id/toggle', (req, res) => {
+  const data = loadFollowUps();
+  const item = [...data.followUps, ...data.blockers].find(i => i.id === req.params.id);
+  if (!item) return res.status(404).json({ error: 'Item not found' });
+  item.completed = !item.completed;
+  item.completedAt = item.completed ? new Date().toISOString() : null;
+  saveFollowUps(data);
+  res.json({ ok: true, item });
+});
+
+app.post('/api/follow-ups', (req, res) => {
+  const { type } = req.body;
+  const data = loadFollowUps();
+
+  let item;
+  if (type === 'blocker') {
+    // Blockers use name/task format
+    item = {
+      id: randomUUID(),
+      name: req.body.name || '',
+      dueDate: req.body.dueDate || null,
+      task: req.body.task || '',
+      completed: false,
+      completedAt: null,
+      createdAt: new Date().toISOString(),
+    };
+    data.blockers.push(item);
+  } else {
+    // Follow-ups use new format: type, confidence, text, recipientEmail
+    item = {
+      id: randomUUID(),
+      type: req.body.followUpType || 'post-call',
+      confidence: req.body.confidence || null,
+      text: req.body.text || req.body.name || '',
+      dueDate: req.body.dueDate || null,
+      recipientEmail: req.body.recipientEmail || req.body.email || '',
+      completed: false,
+      completedAt: null,
+      createdAt: new Date().toISOString(),
+    };
+    data.followUps.push(item);
+  }
+  saveFollowUps(data);
+  res.json({ ok: true, item });
+});
+
+app.delete('/api/follow-ups/:id', (req, res) => {
+  const data = loadFollowUps();
+  data.followUps = data.followUps.filter(i => i.id !== req.params.id);
+  data.blockers = data.blockers.filter(i => i.id !== req.params.id);
+  saveFollowUps(data);
+  res.json({ ok: true });
+});
+
+// Draft a follow-up email from a follow-up item
+app.post('/api/follow-ups/:id/draft', async (req, res) => {
+  try {
+    const data = loadFollowUps();
+    const item = data.followUps.find(i => i.id === req.params.id);
+    if (!item) return res.status(404).json({ error: 'Follow-up not found' });
+    const recipientEmail = item.recipientEmail || item.email || '';
+    if (!recipientEmail) return res.status(400).json({ error: 'No email address stored for this follow-up' });
+
+    const { instruction } = req.body;
+    const toolkit = loadToolkit();
+    const linksList = (toolkit.links || []).map(l => `- ${l.label}: ${l.url}`).join('\n');
+    const rulesText = (toolkit.writingRules || []).map(r => `- ${r}`).join('\n');
+    const bannedText = (toolkit.bannedPhrases || []).map(p => `- "${p}"`).join('\n');
+
+    const itemText = item.text || item.name || '';
+    const itemTask = item.task || '';
+    const prompt = `Draft a follow-up email to ${recipientEmail}.
+Context: ${itemText}${itemTask ? `\nTask: ${itemTask}` : ''}
+${instruction ? `Additional instruction: ${instruction}` : ''}
+
+Available links to include if relevant:
+${linksList}
+
+Writing rules:
+${rulesText}
+
+Banned phrases (never use these):
+${bannedText}
+
+Context about Milette's company: ${toolkit.blurb || ''}
+
+Write ONLY the email body. No subject line. Sign off: "All the best, Milette"`;
+
+    let draft = '';
+    for await (const message of query({ prompt, options: {
+      systemPrompt: `You are Milette's email drafting assistant. Write concise, direct emails following her writing rules exactly. Return ONLY the email body text, nothing else.`,
+      tools: [],
+      permissionMode: 'bypassPermissions',
+      allowDangerouslySkipPermissions: true,
+      maxTurns: 1,
+    }})) {
+      if ('result' in message) draft = message.result;
+    }
+
+    // Post-process links
+    draft = formatDraftLinks(draft);
+
+    res.json({ draft, to: recipientEmail, name: itemText });
+  } catch (err) {
+    console.error('[follow-ups/draft] ERROR:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Send a follow-up email (not a reply — a new email)
+app.post('/api/follow-ups/:id/send', async (req, res) => {
+  try {
+    const data = loadFollowUps();
+    const item = data.followUps.find(i => i.id === req.params.id);
+    if (!item) return res.status(404).json({ error: 'Follow-up not found' });
+    const recipientEmail = item.recipientEmail || item.email || '';
+    if (!recipientEmail) return res.status(400).json({ error: 'No email address' });
+
+    const { draftText, subject } = req.body;
+    if (!draftText) return res.status(400).json({ error: 'draftText is required' });
+
+    const htmlBody = draftToHtml(draftText);
+    const itemText = item.text || item.name || '';
+
+    const mcpClient = await getMcpClient();
+    await mcpClient.callTool({
+      name: 'send-mail-message',
+      arguments: {
+        to: recipientEmail,
+        subject: subject || `Following up - ${itemText}`,
+        body: htmlBody,
+        bodyType: 'html',
+      },
+    });
+
+    // Mark as completed
+    item.completed = true;
+    item.completedAt = new Date().toISOString();
+    saveFollowUps(data);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[follow-ups/send] ERROR:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Post-call follow-up detection — runs every 5 minutes

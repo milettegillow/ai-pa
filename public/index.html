@@ -109,6 +109,24 @@
 
       .col-agenda {
         padding: 16px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .agenda-fixed {
+        flex-shrink: 0;
+      }
+
+      .action-items-section {
+        flex-shrink: 0;
+        padding: 16px 16px 8px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .action-items-scroll {
+        max-height: 300px;
+        min-height: 0;
         overflow-y: auto;
       }
 
@@ -494,7 +512,53 @@
         overflow: hidden;
       }
 
+      .chat-section {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        padding-bottom: 4px;
+        border-top: 1px solid var(--border);
+      }
+
+      .sidebar-section {
+        flex: 1 1 0;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        border-top: 1px solid var(--border);
+        padding: 12px 16px 8px;
+        overflow: hidden;
+      }
+
+      .sidebar-section-header {
+        flex-shrink: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding: 0 0 8px;
+      }
+
+      .sidebar-section-header .sidebar-section-label {
+        padding: 0;
+      }
+
+      .sidebar-section-label {
+        flex-shrink: 0;
+        padding: 0 0 8px;
+      }
+
+      .sidebar-section-content {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
       .col-chat-header {
+        flex-shrink: 0;
         padding: 16px 16px 12px;
       }
 
@@ -661,6 +725,7 @@
 
       .chat-messages {
         flex: 1;
+        min-height: 0;
         overflow-y: auto;
         padding: 8px 16px 16px;
       }
@@ -889,10 +954,11 @@
       }
 
       .action-item {
+        position: relative;
         display: flex;
         align-items: flex-start;
         gap: 8px;
-        padding: 8px 0;
+        padding: 8px 24px 8px 0;
         border-bottom: 1px solid var(--border);
         font-size: 13px;
         font-weight: 300;
@@ -954,11 +1020,201 @@
         background: #7c9e8a0d;
       }
 
+      .action-item.urgency-red {
+        border-left: 3px solid #e05252;
+        padding-left: 8px;
+      }
+
+      .action-item.urgency-orange {
+        border-left: 3px solid #e0a050;
+        padding-left: 8px;
+      }
+
+      .action-item.urgency-yellow {
+        border-left: 3px solid #d4c455;
+        padding-left: 8px;
+      }
+
+      .btn-edit-item {
+        position: absolute;
+        right: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--text-faded);
+        cursor: pointer;
+        font-size: 12px;
+        padding: 4px 6px;
+        opacity: 0;
+        transition: opacity 0.15s;
+      }
+
+      .action-item:hover .btn-edit-item,
+      .sidebar-item:hover .btn-edit-item {
+        opacity: 1;
+      }
+
+      .btn-edit-item:hover {
+        color: var(--text-main);
+      }
+
       .action-items-empty {
         font-size: 12px;
         color: var(--text-faded);
         font-weight: 300;
         padding: 8px 0;
+      }
+
+      .sidebar-item {
+        position: relative;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--text-main);
+        padding: 12px 28px 12px 8px;
+        border-left: 3px solid transparent;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .sidebar-item.sidebar-completed {
+        opacity: 0.5;
+      }
+
+      .sidebar-item.sidebar-completed .sidebar-item-text {
+        text-decoration: line-through;
+      }
+
+      .sidebar-item .checkbox-custom {
+        width: 13px;
+        height: 13px;
+        min-width: 13px;
+        border: 1.5px solid var(--accent);
+        border-radius: 2px;
+        background: var(--bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s;
+        margin-top: 2px;
+      }
+
+      .sidebar-item .checkbox-custom .tick {
+        display: none;
+        color: var(--bg);
+        font-size: 9px;
+        font-weight: 700;
+        line-height: 1;
+      }
+
+      .sidebar-item.sidebar-completed .checkbox-custom {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+
+      .sidebar-item.sidebar-completed .checkbox-custom .tick {
+        display: block;
+      }
+
+      .sidebar-urgency-red { border-left-color: #e05252; }
+      .sidebar-urgency-orange { border-left-color: #e0a050; }
+      .sidebar-urgency-yellow { border-left-color: #d4c455; }
+
+      .sidebar-item-text {
+        flex: 1;
+        line-height: 1.4;
+      }
+
+      .sidebar-task {
+        display: block;
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-top: 2px;
+      }
+
+      .sidebar-date {
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      .sidebar-date-default { color: var(--text-muted); }
+      .sidebar-date-yellow { color: #d4c455; }
+      .sidebar-date-orange { color: #e0a050; }
+      .sidebar-date-red { color: #e05252; }
+
+      .subsection-label {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        padding: 6px 0 2px;
+        margin-top: 4px;
+      }
+
+      .subsection-label:first-child {
+        margin-top: 0;
+      }
+
+      .confidence-badge {
+        font-size: 10px;
+        padding: 1px 5px;
+        border-radius: 8px;
+        font-weight: 500;
+        vertical-align: middle;
+      }
+
+      .confidence-likely {
+        background: rgba(212, 196, 85, 0.2);
+        color: #d4c455;
+      }
+
+      .confidence-maybe {
+        background: rgba(168, 197, 188, 0.15);
+        color: var(--text-muted);
+      }
+
+      .section-empty {
+        font-size: 12px;
+        color: var(--text-faded);
+        font-weight: 300;
+        font-style: italic;
+        padding: 6px 0;
+      }
+
+      .blocker-confirm {
+        background: rgba(125, 155, 118, 0.08);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 10px 12px;
+        margin-bottom: 4px;
+      }
+
+      .blocker-confirm-count {
+        font-size: 11px;
+        color: var(--text-faded);
+        margin-bottom: 4px;
+      }
+
+      .blocker-confirm-text {
+        font-size: 13px;
+        color: var(--text-main);
+        margin-bottom: 8px;
+        line-height: 1.4;
+      }
+
+      .blocker-confirm-actions {
+        display: flex;
+        gap: 6px;
+      }
+
+      .blocker-status {
+        font-size: 12px;
+        color: var(--accent);
+        padding: 6px 0;
       }
 
       ::-webkit-scrollbar {
@@ -989,21 +1245,48 @@
 
     <!-- Left: Agenda -->
     <div class="col-agenda">
-      <div class="section-label">Today</div>
-      <div id="agendaList">
-        <div class="skeleton">
-          <div class="skeleton-bar w-40"></div>
-          <div class="skeleton-bar w-80"></div>
-          <div class="skeleton-bar w-60"></div>
+      <div class="agenda-fixed">
+        <div class="section-label">Today</div>
+        <div id="agendaList">
+          <div class="skeleton">
+            <div class="skeleton-bar w-40"></div>
+            <div class="skeleton-bar w-80"></div>
+            <div class="skeleton-bar w-60"></div>
+          </div>
         </div>
       </div>
 
-      <div class="action-items-header">
-        <div class="section-label">Action Items</div>
-        <button class="btn-generate" id="btnGenerate" onclick="generateActionItems()">Generate</button>
-      </div>
-      <div id="actionItemsList">
-        <div class="action-items-empty">Loading...</div>
+      <div class="chat-section">
+        <div class="col-chat-header">
+          <div class="section-label">Ask your PA</div>
+          <button class="btn btn-briefing" onclick="morningBriefing()">
+            Morning Briefing
+          </button>
+          <div class="chat-actions">
+            <button class="btn btn-small" onclick="refreshData()">
+              &#8635; Refresh
+            </button>
+            <button class="btn btn-small" onclick="resetConversation()">
+              + New Chat
+            </button>
+          </div>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-empty">
+            Your assistant is ready.<br />Ask anything, or start with a Morning
+            Briefing.
+          </div>
+        </div>
+        <div class="typing-indicator" id="typingIndicator">Thinking...</div>
+        <div class="chat-input-bar">
+          <textarea
+            id="chatInput"
+            rows="1"
+            placeholder="Ask your assistant..."
+            onkeydown="handleInputKey(event)"
+          ></textarea>
+          <button class="btn-send" onclick="sendFromInput()">Send</button>
+        </div>
       </div>
     </div>
 
@@ -1033,37 +1316,36 @@
       </div>
     </div>
 
-    <!-- Right: Chat -->
+    <!-- Right: Action Items + Follow-ups + Blockers -->
     <div class="col-chat">
-      <div class="col-chat-header">
-        <div class="section-label">Ask your PA</div>
-        <button class="btn btn-briefing" onclick="morningBriefing()">
-          Morning Briefing
-        </button>
-        <div class="chat-actions">
-          <button class="btn btn-small" onclick="refreshData()">
-            &#8635; Refresh
-          </button>
-          <button class="btn btn-small" onclick="resetConversation()">
-            + New Chat
-          </button>
+      <div class="action-items-section">
+        <div class="action-items-header">
+          <div class="section-label">Action Items</div>
+          <button class="btn-generate" id="btnGenerate" onclick="generateActionItems()">Generate</button>
+        </div>
+        <div class="action-items-scroll" id="actionItemsList">
+          <div class="action-items-empty">Loading...</div>
         </div>
       </div>
-      <div class="chat-messages" id="chatMessages">
-        <div class="chat-empty">
-          Your assistant is ready.<br />Ask anything, or start with a Morning
-          Briefing.
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-header">
+          <div class="section-label sidebar-section-label">Follow-ups</div>
+          <button class="btn-generate" id="btnRegenFollowUps" onclick="regenerateFollowUps()">Regenerate</button>
+        </div>
+        <div class="sidebar-section-content" id="followUpsList">
+          <div class="section-empty">Loading...</div>
         </div>
       </div>
-      <div class="typing-indicator" id="typingIndicator">Thinking...</div>
-      <div class="chat-input-bar">
-        <textarea
-          id="chatInput"
-          rows="1"
-          placeholder="Ask your assistant..."
-          onkeydown="handleInputKey(event)"
-        ></textarea>
-        <button class="btn-send" onclick="sendFromInput()">Send</button>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-header">
+          <div class="section-label sidebar-section-label">Blockers</div>
+          <button class="btn-generate" id="btnRegenBlockers" onclick="regenerateBlockers()">Regenerate</button>
+        </div>
+        <div class="sidebar-section-content" id="blockersList">
+          <div class="section-empty">Loading...</div>
+        </div>
       </div>
     </div>
 
@@ -1075,6 +1357,8 @@
       let chatMessages = [];
       let isSending = false;
       let actionItems = [];
+      let followUps = [];
+      let blockers = [];
 
       // ── Init ───────────────────────────────────────
       const now = new Date();
@@ -1104,6 +1388,7 @@
       function refreshData() {
         fetchEmails();
         fetchCalendar();
+        fetchFollowUps();
       }
 
       async function fetchEmails() {
@@ -1195,6 +1480,34 @@
         }
       }
 
+      function getUrgencyLevel(item) {
+        // Returns: 0 = red (overdue), 1 = orange (past ideal), 2 = yellow (due today), 3 = none
+        if (item.completed) return 3;
+        const ref = item.receivedAt || item.createdAt;
+        if (!ref) return 3;
+        const ageMs = Date.now() - new Date(ref).getTime();
+        const ageHours = ageMs / (1000 * 60 * 60);
+
+        const isIntro = item.isIntro || false;
+        const isPostCall = item.source === "calendar";
+
+        let idealH, hardH;
+        if (isIntro || isPostCall) {
+          idealH = 2; hardH = 24;
+        } else {
+          idealH = 24; hardH = 120; // 5 working days
+        }
+
+        if (ageHours >= hardH) return 0; // red — overdue
+        if (ageHours >= idealH) return 1; // orange — past ideal
+        // "Due today" — within ideal window but received today
+        const receivedDate = new Date(ref).toDateString();
+        const todayDate = new Date().toDateString();
+        if (receivedDate === todayDate) return 2; // yellow — due today
+        if (ageHours < idealH) return 2; // yellow — still within ideal
+        return 3;
+      }
+
       function renderActionItems() {
         const el = document.getElementById("actionItemsList");
         if (actionItems.length === 0) {
@@ -1202,19 +1515,46 @@
           return;
         }
 
-        // Sort: follow-ups first, then incomplete, then completed
-        const sorted = [...actionItems].sort((a, b) => {
+        // Diagnostic: log urgency computation per item
+        console.group('[Urgency Diagnostics]');
+        actionItems.forEach(item => {
+          if (item.completed) return;
+          const ref = item.receivedAt || item.createdAt;
+          const ageMs = ref ? Date.now() - new Date(ref).getTime() : 0;
+          const ageHours = ageMs / (1000 * 60 * 60);
+          const level = getUrgencyLevel(item);
+          const levelLabel = ['RED', 'ORANGE', 'YELLOW', 'NONE'][level];
+          console.log(
+            `${levelLabel} | age: ${ageHours.toFixed(1)}h | receivedAt: ${item.receivedAt || 'NULL'} | createdAt: ${item.createdAt} | isIntro: ${item.isIntro || false} | source: ${item.source} | "${item.text.slice(0, 60)}..."`
+          );
+        });
+        console.groupEnd();
+
+        // Compute urgency for each item
+        const withUrgency = actionItems.map(item => ({
+          ...item,
+          _urgency: getUrgencyLevel(item),
+        }));
+
+        // Sort: by urgency (red first), then follow-ups, then incomplete before completed
+        withUrgency.sort((a, b) => {
+          if (a.completed !== b.completed) return a.completed ? 1 : -1;
+          if (a._urgency !== b._urgency) return a._urgency - b._urgency;
           if (a.source === "calendar" && b.source !== "calendar") return -1;
           if (b.source === "calendar" && a.source !== "calendar") return 1;
-          if (a.completed !== b.completed) return a.completed ? 1 : -1;
           return 0;
         });
 
-        el.innerHTML = sorted.map(item => {
+        el.innerHTML = withUrgency.map(item => {
           const isFollowUp = item.source === "calendar";
           const classes = ["action-item"];
           if (item.completed) classes.push("completed");
           if (isFollowUp) classes.push("follow-up");
+          if (!item.completed) {
+            if (item._urgency === 0) classes.push("urgency-red");
+            else if (item._urgency === 1) classes.push("urgency-orange");
+            else if (item._urgency === 2) classes.push("urgency-yellow");
+          }
 
           return `
             <div class="${classes.join(" ")}">
@@ -1222,6 +1562,7 @@
                 <span class="tick">\u2713</span>
               </label>
               <span class="action-item-text">${esc(item.text)}</span>
+              <button class="btn-edit-item" onclick="editActionItem('${item.id}')" title="Edit">&#9998;</button>
             </div>
           `;
         }).join("");
@@ -1240,6 +1581,416 @@
         } catch (err) {
           console.error("[toggleActionItem] ERROR:", err);
           fetchActionItems();
+        }
+      }
+
+      // ── Follow-ups & Blockers ─────────────────────
+      async function fetchFollowUps() {
+        try {
+          const res = await fetch("/api/follow-ups");
+          const data = await res.json();
+          followUps = data.followUps || [];
+          blockers = data.blockers || [];
+          renderFollowUps();
+          renderBlockers();
+        } catch (err) {
+          console.error("[fetchFollowUps] ERROR:", err);
+        }
+      }
+
+      function getDateUrgency(dueDate) {
+        // Returns: 0 = red (overdue), 1 = orange (due within 24h), 2 = yellow (due within 3 days), 3 = none
+        if (!dueDate) return 3;
+        const now = new Date();
+        const due = new Date(dueDate + 'T23:59:59');
+        const diffMs = due - now;
+        const diffHours = diffMs / (1000 * 60 * 60);
+        if (diffHours < 0) return 0;       // overdue
+        if (diffHours < 24) return 1;      // due within 24h
+        if (diffHours < 72) return 2;      // due within 3 days
+        return 3;                          // plenty of time
+      }
+
+      function formatDueDate(dueDate) {
+        if (!dueDate) return '';
+        const d = new Date(dueDate + 'T00:00:00');
+        const day = d.getDate();
+        const month = d.toLocaleDateString('en-GB', { month: 'short' });
+        return `${day} ${month}`;
+      }
+
+      function renderFollowUpItem(item) {
+        const text = item.text || item.name || '';
+        const urgency = item.completed ? 3 : getDateUrgency(item.dueDate);
+        const urgencyClass = !item.completed && urgency < 3
+          ? ` sidebar-urgency-${['red', 'orange', 'yellow'][urgency]}`
+          : '';
+        const completedClass = item.completed ? ' sidebar-completed' : '';
+        const dateStr = formatDueDate(item.dueDate);
+        const dateUrgency = getDateUrgency(item.dueDate);
+        const dateColorClass = dateStr
+          ? ` sidebar-date-${['red', 'orange', 'yellow', 'default'][dateUrgency]}`
+          : '';
+        const confidenceBadge = item.confidence && item.confidence !== 'definite'
+          ? ` <span class="confidence-badge confidence-${item.confidence}">${item.confidence}</span>`
+          : '';
+
+        return `
+          <div class="sidebar-item${urgencyClass}${completedClass}">
+            <label class="checkbox-custom" onclick="toggleFollowUp('${item.id}')">
+              <span class="tick">&#10003;</span>
+            </label>
+            <span class="sidebar-item-text">
+              ${esc(text)}${confidenceBadge}${dateStr ? ` <span class="sidebar-date${dateColorClass}">[${dateStr}]</span>` : ''}
+            </span>
+            <button class="btn-edit-item" onclick="editFollowUp('${item.id}')" title="Edit">&#9998;</button>
+          </div>
+        `;
+      }
+
+      function renderFollowUps() {
+        const el = document.getElementById("followUpsList");
+        if (followUps.length === 0) {
+          el.innerHTML = '<div class="section-empty">Nothing yet</div>';
+          return;
+        }
+
+        const postCall = followUps.filter(i => i.type === 'post-call');
+        const awaiting = followUps.filter(i => i.type === 'awaiting-reply');
+        // Items without a type go under post-call
+        const other = followUps.filter(i => !i.type || (i.type !== 'post-call' && i.type !== 'awaiting-reply'));
+
+        let html = '';
+        const allPostCall = [...postCall, ...other];
+        if (allPostCall.length > 0) {
+          html += `<div class="subsection-label">\u{1F4DE} Post-call</div>`;
+          html += allPostCall.map(renderFollowUpItem).join('');
+        }
+        if (awaiting.length > 0) {
+          html += `<div class="subsection-label">\u{1F4E7} Awaiting reply</div>`;
+          html += awaiting.map(renderFollowUpItem).join('');
+        }
+        el.innerHTML = html;
+      }
+
+      function renderBlockers() {
+        const el = document.getElementById("blockersList");
+        if (blockers.length === 0) {
+          el.innerHTML = '<div class="section-empty">Nothing yet</div>';
+          return;
+        }
+
+        el.innerHTML = blockers.map(item => {
+          const urgency = item.completed ? 3 : getDateUrgency(item.dueDate);
+          const urgencyClass = !item.completed && urgency < 3
+            ? ` sidebar-urgency-${['red', 'orange', 'yellow'][urgency]}`
+            : '';
+          const completedClass = item.completed ? ' sidebar-completed' : '';
+          const dateStr = formatDueDate(item.dueDate);
+          const dateUrgency = getDateUrgency(item.dueDate);
+          const dateColorClass = dateStr
+            ? ` sidebar-date-${['red', 'orange', 'yellow', 'default'][dateUrgency]}`
+            : '';
+
+          return `
+            <div class="sidebar-item${urgencyClass}${completedClass}">
+              <label class="checkbox-custom" onclick="toggleFollowUp('${item.id}')">
+                <span class="tick">&#10003;</span>
+              </label>
+              <span class="sidebar-item-text">
+                ${esc(item.name)}${dateStr ? ` <span class="sidebar-date${dateColorClass}">[${dateStr}]</span>` : ''}
+                <span class="sidebar-task">${esc(item.task)}</span>
+              </span>
+              <button class="btn-edit-item" onclick="editFollowUp('${item.id}')" title="Edit">&#9998;</button>
+            </div>
+          `;
+        }).join("");
+      }
+
+      async function toggleFollowUp(id) {
+        try {
+          await fetch(`/api/follow-ups/${id}/toggle`, { method: "PATCH" });
+          // Update local state
+          const fu = followUps.find(i => i.id === id);
+          const bl = blockers.find(i => i.id === id);
+          const item = fu || bl;
+          if (item) {
+            item.completed = !item.completed;
+            item.completedAt = item.completed ? new Date().toISOString() : null;
+          }
+          renderFollowUps();
+          renderBlockers();
+        } catch (err) {
+          console.error("[toggleFollowUp] ERROR:", err);
+          fetchFollowUps();
+        }
+      }
+
+      // ── Blocker generation ─────────────────────────
+      async function regenerateBlockers() {
+        const btn = document.getElementById("btnRegenBlockers");
+        const el = document.getElementById("blockersList");
+        btn.disabled = true;
+        btn.textContent = "Thinking...";
+
+        try {
+          const res = await fetch("/api/blockers/generate", { method: "POST" });
+          const data = await res.json();
+          if (data.error) throw new Error(data.error);
+
+          const suggestions = data.suggestions || [];
+          if (suggestions.length === 0) {
+            btn.textContent = "Regenerate";
+            btn.disabled = false;
+            showBlockerStatus("No new blockers found.");
+            return;
+          }
+
+          btn.textContent = "Reviewing...";
+          await reviewBlockerSuggestions(suggestions);
+        } catch (err) {
+          console.error("[regenerateBlockers] ERROR:", err);
+          showBlockerStatus("Error: " + err.message);
+        } finally {
+          btn.textContent = "Regenerate";
+          btn.disabled = false;
+        }
+      }
+
+      async function reviewBlockerSuggestions(suggestions) {
+        let added = 0;
+        for (let i = 0; i < suggestions.length; i++) {
+          const s = suggestions[i];
+          const accepted = await showBlockerConfirm(s.text, i + 1, suggestions.length);
+          if (accepted) {
+            try {
+              const res = await fetch("/api/follow-ups", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ type: "blocker", name: s.text, task: s.impliedBy || "" }),
+              });
+              const data = await res.json();
+              if (data.item) {
+                blockers.push(data.item);
+                renderBlockers();
+                added++;
+              }
+            } catch (err) {
+              console.error("[addBlocker] ERROR:", err);
+            }
+          }
+        }
+        showBlockerStatus(`Done — ${added} blocker${added !== 1 ? 's' : ''} added.`);
+      }
+
+      function showBlockerConfirm(text, current, total) {
+        return new Promise(resolve => {
+          const el = document.getElementById("blockersList");
+          const confirmHtml = `
+            <div class="blocker-confirm">
+              <div class="blocker-confirm-count">${current} of ${total}</div>
+              <div class="blocker-confirm-text">Add blocker: "${esc(text)}"?</div>
+              <div class="blocker-confirm-actions">
+                <button class="btn-option" onclick="this.closest('.blocker-confirm').dataset.result='add'">&#10003; Add</button>
+                <button class="btn-option" onclick="this.closest('.blocker-confirm').dataset.result='skip'" style="margin-left:4px">&#10007; Skip</button>
+              </div>
+            </div>
+          `;
+          // Prepend the confirmation prompt
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = confirmHtml;
+          const confirmEl = wrapper.firstElementChild;
+          el.prepend(confirmEl);
+          el.scrollTop = 0;
+
+          // Listen for button clicks
+          confirmEl.addEventListener('click', (e) => {
+            if (confirmEl.dataset.result) {
+              const accepted = confirmEl.dataset.result === 'add';
+              confirmEl.remove();
+              resolve(accepted);
+            }
+          });
+        });
+      }
+
+      function showBlockerStatus(msg) {
+        const el = document.getElementById("blockersList");
+        const statusEl = document.createElement('div');
+        statusEl.className = 'blocker-status';
+        statusEl.textContent = msg;
+        el.prepend(statusEl);
+        setTimeout(() => statusEl.remove(), 3000);
+      }
+
+      // ── Follow-up generation ─────────────────────
+      async function regenerateFollowUps() {
+        const btn = document.getElementById("btnRegenFollowUps");
+        btn.disabled = true;
+        btn.textContent = "Thinking...";
+
+        try {
+          const res = await fetch("/api/followups/generate", { method: "POST" });
+          const data = await res.json();
+          if (data.error) throw new Error(data.error);
+
+          const suggestions = data.suggestions || [];
+          if (suggestions.length === 0) {
+            btn.textContent = "Regenerate";
+            btn.disabled = false;
+            showFollowUpStatus("No new follow-ups found.");
+            return;
+          }
+
+          btn.textContent = "Reviewing...";
+          await reviewFollowUpSuggestions(suggestions);
+        } catch (err) {
+          console.error("[regenerateFollowUps] ERROR:", err);
+          showFollowUpStatus("Error: " + err.message);
+        } finally {
+          btn.textContent = "Regenerate";
+          btn.disabled = false;
+        }
+      }
+
+      async function reviewFollowUpSuggestions(suggestions) {
+        let added = 0;
+        for (let i = 0; i < suggestions.length; i++) {
+          const s = suggestions[i];
+          const typeLabel = s.type === 'awaiting-reply' ? '\u{1F4E7}' : '\u{1F4DE}';
+          const confLabel = s.confidence ? ` (${s.confidence})` : '';
+          const accepted = await showFollowUpConfirm(
+            `${typeLabel} ${s.text}${confLabel}`,
+            i + 1,
+            suggestions.length
+          );
+          if (accepted) {
+            try {
+              const res = await fetch("/api/follow-ups", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  type: "follow-up",
+                  followUpType: s.type || 'post-call',
+                  text: s.text,
+                  recipientEmail: s.recipientEmail || '',
+                  confidence: s.confidence || null,
+                  dueDate: s.dueDate || null,
+                }),
+              });
+              const data = await res.json();
+              if (data.item) {
+                followUps.push(data.item);
+                renderFollowUps();
+                added++;
+              }
+            } catch (err) {
+              console.error("[addFollowUp] ERROR:", err);
+            }
+          }
+        }
+        showFollowUpStatus(`Done \u2014 ${added} follow-up${added !== 1 ? 's' : ''} added.`);
+      }
+
+      function showFollowUpConfirm(text, current, total) {
+        return new Promise(resolve => {
+          const el = document.getElementById("followUpsList");
+          const confirmHtml = `
+            <div class="blocker-confirm">
+              <div class="blocker-confirm-count">${current} of ${total}</div>
+              <div class="blocker-confirm-text">Add: "${esc(text)}"?</div>
+              <div class="blocker-confirm-actions">
+                <button class="btn-option" onclick="this.closest('.blocker-confirm').dataset.result='add'">\u2713 Add</button>
+                <button class="btn-option" onclick="this.closest('.blocker-confirm').dataset.result='skip'" style="margin-left:4px">\u2717 Skip</button>
+              </div>
+            </div>
+          `;
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = confirmHtml;
+          const confirmEl = wrapper.firstElementChild;
+          el.prepend(confirmEl);
+          el.scrollTop = 0;
+
+          confirmEl.addEventListener('click', (e) => {
+            if (confirmEl.dataset.result) {
+              const accepted = confirmEl.dataset.result === 'add';
+              confirmEl.remove();
+              resolve(accepted);
+            }
+          });
+        });
+      }
+
+      function showFollowUpStatus(msg) {
+        const el = document.getElementById("followUpsList");
+        const statusEl = document.createElement('div');
+        statusEl.className = 'blocker-status';
+        statusEl.textContent = msg;
+        el.prepend(statusEl);
+        setTimeout(() => statusEl.remove(), 3000);
+      }
+
+      // ── Inline editing ───────────────────────────
+      function editActionItem(id) {
+        const item = actionItems.find(i => i.id === id);
+        if (!item) return;
+        const newText = prompt("Edit action item:", item.text);
+        if (newText === null || newText.trim() === '' || newText.trim() === item.text) return;
+        fetch(`/api/action-items/${id}/text`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: newText.trim() }),
+        }).then(() => {
+          item.text = newText.trim();
+          renderActionItems();
+        }).catch(err => {
+          console.error('[editActionItem] ERROR:', err);
+        });
+      }
+
+      function editFollowUp(id) {
+        const fu = followUps.find(i => i.id === id);
+        const bl = blockers.find(i => i.id === id);
+        const item = fu || bl;
+        if (!item) return;
+
+        const isBlocker = !!bl;
+        if (isBlocker) {
+          // Blockers use name: task format
+          const currentDisplay = item.task ? `${item.name}: ${item.task}` : item.name;
+          const newText = prompt("Edit blocker:", currentDisplay);
+          if (newText === null || newText.trim() === '' || newText.trim() === currentDisplay) return;
+          let name, task;
+          const colonIdx = newText.indexOf(':');
+          if (colonIdx > 0) {
+            name = newText.slice(0, colonIdx).trim();
+            task = newText.slice(colonIdx + 1).trim();
+          } else {
+            name = newText.trim();
+            task = item.task;
+          }
+          fetch(`/api/follow-ups/${id}/text`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, task }),
+          }).then(() => {
+            item.name = name;
+            item.task = task;
+            renderBlockers();
+          }).catch(err => console.error('[editFollowUp] ERROR:', err));
+        } else {
+          // Follow-ups use text field
+          const currentText = item.text || item.name || '';
+          const newText = prompt("Edit follow-up:", currentText);
+          if (newText === null || newText.trim() === '' || newText.trim() === currentText) return;
+          fetch(`/api/follow-ups/${id}/text`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: newText.trim() }),
+          }).then(() => {
+            item.text = newText.trim();
+            renderFollowUps();
+          }).catch(err => console.error('[editFollowUp] ERROR:', err));
         }
       }
 
@@ -1438,8 +2189,17 @@
           });
           const analyseData = await analyseRes.json();
           const options = analyseData.options || [];
+          const missingLink = analyseData.missingLink || null;
 
-          if (options.length > 0) {
+          // Store options for after link prompt
+          emails[index]._draftOptions = options;
+
+          if (missingLink) {
+            // Show link prompt first
+            btn.textContent = "Draft Reply";
+            btn.disabled = false;
+            showLinkPrompt(index, missingLink, options);
+          } else if (options.length > 0) {
             // Step 2a: Show options
             btn.textContent = "Draft Reply";
             btn.disabled = false;
@@ -1454,6 +2214,56 @@
           box.innerHTML = `<div class="draft-box"><div class="draft-loading">Error: ${esc(err.message)}</div></div>`;
           btn.disabled = false;
           btn.textContent = "Draft Reply";
+        }
+      }
+
+      function showLinkPrompt(index, description, options) {
+        const box = document.getElementById(`draftBox${index}`);
+        if (!box) return;
+
+        box.innerHTML = `
+          <div class="draft-box" onclick="event.stopPropagation()">
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+              I'll need a link before drafting — ${esc(description)}. Do you have one?
+            </div>
+            <input type="text" class="draft-custom-input" id="linkInput${index}" placeholder="Paste link here..." onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter'){event.stopPropagation(); submitLink(${index})}" />
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-option" onclick="event.stopPropagation(); submitLink(${index})">Use this link</button>
+              <button class="btn-option" onclick="event.stopPropagation(); skipLink(${index})" style="color: var(--text-faded);">Continue without it</button>
+            </div>
+          </div>
+        `;
+      }
+
+      function submitLink(index) {
+        const input = document.getElementById(`linkInput${index}`);
+        const link = input?.value?.trim();
+        if (!link) return;
+        emails[index]._additionalLinks = [link];
+        const options = emails[index]._draftOptions || [];
+        if (options.length > 0) {
+          showDraftOptions(index, options);
+        } else {
+          const box = document.getElementById(`draftBox${index}`);
+          const btn = document.getElementById(`btnDraft${index}`);
+          btn.disabled = true;
+          btn.textContent = "Drafting...";
+          box.innerHTML = '<div class="draft-box"><div class="draft-loading">Drafting reply...</div></div>';
+          executeDraft(index, null, [link]);
+        }
+      }
+
+      function skipLink(index) {
+        const options = emails[index]._draftOptions || [];
+        if (options.length > 0) {
+          showDraftOptions(index, options);
+        } else {
+          const box = document.getElementById(`draftBox${index}`);
+          const btn = document.getElementById(`btnDraft${index}`);
+          btn.disabled = true;
+          btn.textContent = "Drafting...";
+          box.innerHTML = '<div class="draft-box"><div class="draft-loading">Drafting reply...</div></div>';
+          executeDraft(index);
         }
       }
 
@@ -1485,10 +2295,11 @@
         btn.textContent = "Drafting...";
         box.innerHTML = '<div class="draft-box"><div class="draft-loading">Drafting reply...</div></div>';
 
-        await executeDraft(index, instruction);
+        const additionalLinks = emails[index]._additionalLinks || null;
+        await executeDraft(index, instruction, additionalLinks);
       }
 
-      async function executeDraft(index, instruction) {
+      async function executeDraft(index, instruction, additionalLinks) {
         const email = emails[index];
         const box = document.getElementById(`draftBox${index}`);
         const btn = document.getElementById(`btnDraft${index}`);
@@ -1499,8 +2310,10 @@
             senderEmail: email.senderEmail,
             subject: email.subject,
             preview: email.body || email.preview,
+            receivedAt: email.time || null,
           };
           if (instruction) payload.instruction = instruction;
+          if (additionalLinks?.length) payload.additionalLinks = additionalLinks;
 
           const res = await fetch(`/api/emails/${encodeURIComponent(email.id)}/draft-reply`, {
             method: "POST",

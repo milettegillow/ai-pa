@@ -1,0 +1,37 @@
+{
+  "followUps": [
+    {
+      "id": "placeholder-christa",
+      "type": "post-call",
+      "confidence": null,
+      "text": "Follow up with Christa (Apple) after call",
+      "dueDate": "2026-03-09",
+      "recipientEmail": "",
+      "completed": false,
+      "completedAt": null,
+      "createdAt": "2026-03-08T11:00:00.000Z"
+    },
+    {
+      "id": "placeholder-stefanie",
+      "type": "awaiting-reply",
+      "confidence": "definite",
+      "text": "Follow up with Stefanie re: blurb + investor deck to Toniic",
+      "dueDate": null,
+      "recipientEmail": "",
+      "completed": false,
+      "completedAt": null,
+      "createdAt": "2026-03-08T11:00:00.000Z"
+    }
+  ],
+  "blockers": [
+    {
+      "id": "placeholder-lp-deck",
+      "name": "Finalise LP deck",
+      "dueDate": null,
+      "task": "Cannot respond to fund-related emails until complete",
+      "completed": false,
+      "completedAt": null,
+      "createdAt": "2026-03-08T11:00:00.000Z"
+    }
+  ]
+}
