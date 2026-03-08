@@ -266,9 +266,90 @@ app.post('/api/emails/:id/read', async (req, res) => {
 });
 
 // Draft reply — uses Claude Agent SDK with draft-specific system prompt + toolkit context
+// Strip quoted reply chains from email threads — keep only the latest message
+function stripQuotedReplies(text) {
+  if (!text) return '';
+  // Split on common reply markers and keep only the first part
+  const markers = [
+    /\r?\nOn .{10,80} wrote:\s*\r?\n/,        // "On Mon, Feb 16... wrote:"
+    /\r?\n-{3,}\s*Original Message\s*-{3,}/i,  // "--- Original Message ---"
+    /\r?\nFrom: .+\r?\nSent: /,               // "From: X\nSent: ..."
+    /\r?\n_{3,}\r?\nFrom: /,                   // "___\nFrom: ..."
+    /\r?\n>{2,}/,                               // ">>>" quoted lines
+  ];
+  let result = text;
+  for (const marker of markers) {
+    const match = result.match(marker);
+    if (match) {
+      result = result.slice(0, match.index);
+    }
+  }
+  return result.trim();
+}
+
+// Analyse email to determine response options
+app.post('/api/emails/:id/analyse', async (req, res) => {
+  try {
+    const { sender, senderEmail, subject, body } = req.body;
+    if (!sender || !subject) {
+      return res.status(400).json({ error: 'sender and subject are required' });
+    }
+
+    const latestMessage = stripQuotedReplies(body);
+    console.log('[analyse] Received:', { sender, senderEmail, subject, bodyLength: body?.length, strippedLength: latestMessage.length });
+
+    const toolkit = loadToolkit();
+    const context = toolkit.blurb ? `\nContext about Milette's company: ${toolkit.blurb}` : '';
+
+    const prompt = `Analyse this email and determine if there are multiple distinct ways Milette could respond.
+
+From: ${sender} <${senderEmail || ''}>
+Subject: ${subject}
+Body: ${latestMessage || '(no content)'}
+
+Consider: Are there clear response options? (e.g. yes/no to a request, accept/decline an invitation, different tones like enthusiastic vs polite decline, option A vs option B)
+
+If YES — return a JSON array of 2-4 short option labels (max 6 words each).
+If NO — return an empty JSON array [].
+
+Return ONLY the JSON array, nothing else.`;
+
+    let rawResult = '';
+    for await (const message of query({ prompt, options: {
+      systemPrompt: `You are an email response analyst. Determine whether an email contains a question, request, or decision point that could be answered in different ways. Look for: direct questions, invitations, offers, requests for confirmation, yes/no decisions, scheduling proposals. If the sender is asking something that has 2+ reasonable responses, return option labels. Only return [] for purely informational emails with no question or call to action.${context}`,
+      tools: [],
+      permissionMode: 'bypassPermissions',
+      allowDangerouslySkipPermissions: true,
+      maxTurns: 1,
+    }})) {
+      if ('result' in message) {
+        rawResult = message.result;
+      }
+    }
+
+    console.log('[analyse] Raw Claude response:', JSON.stringify(rawResult));
+
+    let options = [];
+    try {
+      const jsonMatch = rawResult.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        options = JSON.parse(jsonMatch[0]);
+      }
+    } catch (e) {
+      console.error('[analyse] Failed to parse:', e.message);
+    }
+
+    console.log('[analyse] Parsed options:', options);
+    res.json({ options });
+  } catch (err) {
+    console.error('[/api/emails/:id/analyse] ERROR:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/emails/:id/draft-reply', async (req, res) => {
   try {
-    const { sender, senderEmail, subject, preview } = req.body;
+    const { sender, senderEmail, subject, preview, instruction } = req.body;
     if (!sender || !subject) {
       return res.status(400).json({ error: 'sender and subject are required' });
     }
@@ -289,16 +370,20 @@ app.post('/api/emails/:id/draft-reply', async (req, res) => {
       fullPrompt += '\n\n## Banned Phrases (NEVER use these)\n\n' + toolkit.bannedPhrases.map(p => `- "${p}"`).join('\n');
     }
 
-    const prompt = `Draft a reply to this email:
+    let userPrompt = `Draft a reply to this email:
 
 From: ${sender} <${senderEmail || ''}>
 Subject: ${subject}
-Body: ${preview || '(no preview available)'}
+Body: ${preview || '(no preview available)'}`;
 
-Write ONLY the reply body text. No subject line, no headers, no explanation.`;
+    if (instruction) {
+      userPrompt += `\n\nThe user wants to: ${instruction}. Draft the reply accordingly.`;
+    }
+
+    userPrompt += '\n\nWrite ONLY the reply body text. No subject line, no headers, no explanation.';
 
     let draft = '';
-    for await (const message of query({ prompt, options: {
+    for await (const message of query({ prompt: userPrompt, options: {
       systemPrompt: fullPrompt,
       tools: [],
       permissionMode: 'bypassPermissions',
@@ -333,7 +418,7 @@ app.get('/api/emails', async (_req, res) => {
       filter: 'isRead eq false',
       top: 50,
       orderby: ['receivedDateTime desc'],
-      select: ['id', 'subject', 'from', 'receivedDateTime', 'body', 'bodyPreview', 'isRead', 'inferenceClassification'],
+      select: ['id', 'subject', 'from', 'toRecipients', 'ccRecipients', 'receivedDateTime', 'body', 'bodyPreview', 'isRead', 'inferenceClassification'],
     });
 
     // Parse MCP result — content is an array of content blocks
@@ -356,6 +441,8 @@ app.get('/api/emails', async (_req, res) => {
                 bodyType: msg.body?.contentType || 'text',
                 time: msg.receivedDateTime || '',
                 isRead: msg.isRead ?? false,
+                to: (msg.toRecipients || []).map(r => ({ name: r.emailAddress?.name || '', email: r.emailAddress?.address || '' })),
+                cc: (msg.ccRecipients || []).map(r => ({ name: r.emailAddress?.name || '', email: r.emailAddress?.address || '' })),
               });
             }
           } catch (e) {
@@ -387,7 +474,7 @@ app.post('/api/emails/refresh', async (_req, res) => {
       filter: 'isRead eq false',
       top: 50,
       orderby: ['receivedDateTime desc'],
-      select: ['id', 'subject', 'from', 'receivedDateTime', 'body', 'bodyPreview', 'isRead', 'inferenceClassification'],
+      select: ['id', 'subject', 'from', 'toRecipients', 'ccRecipients', 'receivedDateTime', 'body', 'bodyPreview', 'isRead', 'inferenceClassification'],
     });
 
     const emails = [];
@@ -409,6 +496,8 @@ app.post('/api/emails/refresh', async (_req, res) => {
                 bodyType: msg.body?.contentType || 'text',
                 time: msg.receivedDateTime || '',
                 isRead: msg.isRead ?? false,
+                to: (msg.toRecipients || []).map(r => ({ name: r.emailAddress?.name || '', email: r.emailAddress?.address || '' })),
+                cc: (msg.ccRecipients || []).map(r => ({ name: r.emailAddress?.name || '', email: r.emailAddress?.address || '' })),
               });
             }
           } catch (e) {

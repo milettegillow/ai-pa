@@ -319,6 +319,89 @@
         min-height: 80px;
       }
 
+      .email-recipients-toggle {
+        font-size: 11px;
+        font-weight: 300;
+        color: var(--text-faded);
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+        font-family: inherit;
+        margin-bottom: 8px;
+        display: inline-block;
+      }
+
+      .email-recipients-toggle:hover {
+        color: var(--muted);
+      }
+
+      .email-recipients {
+        display: none;
+        font-size: 11px;
+        font-weight: 300;
+        color: var(--text-faded);
+        margin-bottom: 10px;
+        line-height: 1.6;
+      }
+
+      .email-recipients.visible {
+        display: block;
+      }
+
+      .email-recipients-label {
+        color: var(--muted);
+        font-weight: 400;
+      }
+
+      .draft-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+
+      .btn-option {
+        font-family: inherit;
+        font-size: 0.6rem;
+        font-weight: 400;
+        color: var(--text-muted);
+        background: transparent;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 5px 12px;
+        cursor: pointer;
+        transition: color 0.15s, border-color 0.15s, background 0.15s;
+      }
+
+      .btn-option:hover {
+        color: var(--text);
+        border-color: var(--accent);
+        background: #7c9e8a0d;
+      }
+
+      .draft-custom-input {
+        width: 100%;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 300;
+        color: var(--text);
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 6px 10px;
+        margin-bottom: 10px;
+        outline: none;
+      }
+
+      .draft-custom-input::placeholder {
+        color: var(--text-faded);
+      }
+
+      .draft-custom-input:focus {
+        border-color: var(--accent);
+      }
+
       .thread-toggle {
         font-family: inherit;
         font-size: 0.6rem;
@@ -1193,6 +1276,7 @@
               <div class="email-preview">${esc(email.preview || "")}</div>
             </div>
             <div class="email-expanded ${isExpanded ? "visible" : ""}">
+              ${isExpanded ? renderRecipients(email, i) : ""}
               ${isExpanded ? renderEmailBody(email, i) : ""}
               <div class="email-actions">
                 <button class="btn btn-draft btn-small" onclick="event.stopPropagation(); draftReply(${i})" id="btnDraft${i}">Draft Reply</button>
@@ -1204,6 +1288,30 @@
         `;
           })
           .join("");
+      }
+
+      function renderRecipients(email, index) {
+        const hasTo = email.to && email.to.length > 0;
+        const hasCc = email.cc && email.cc.length > 0;
+        if (!hasTo && !hasCc) return "";
+
+        const toStr = hasTo ? `<span class="email-recipients-label">To:</span> ${email.to.map(r => esc(r.name || r.email)).join(", ")}` : "";
+        const ccStr = hasCc ? `<span class="email-recipients-label">CC:</span> ${email.cc.map(r => esc(r.name || r.email)).join(", ")}` : "";
+
+        return `
+          <button class="email-recipients-toggle" onclick="event.stopPropagation(); toggleRecipients(${index})" id="recipientsToggle${index}">Show recipients \u25BE</button>
+          <div class="email-recipients" id="recipientsBox${index}">
+            ${toStr}${toStr && ccStr ? "<br>" : ""}${ccStr}
+          </div>
+        `;
+      }
+
+      function toggleRecipients(index) {
+        const el = document.getElementById("recipientsBox" + index);
+        const btn = document.getElementById("recipientsToggle" + index);
+        if (!el || !btn) return;
+        const showing = el.classList.toggle("visible");
+        btn.textContent = showing ? "Hide recipients \u25B4" : "Show recipients \u25BE";
       }
 
       function splitThread(text) {
@@ -1273,21 +1381,87 @@
         const btn = document.getElementById(`btnDraft${index}`);
         if (!box) return;
 
-        // Show loading state
+        // Step 1: Analyse for response options
         btn.disabled = true;
-        btn.textContent = "Drafting...";
-        box.innerHTML = '<div class="draft-box"><div class="draft-loading">Drafting reply...</div></div>';
+        btn.textContent = "Thinking...";
+        box.innerHTML = '<div class="draft-box"><div class="draft-loading">Analysing email...</div></div>';
 
         try {
-          const res = await fetch(`/api/emails/${encodeURIComponent(email.id)}/draft-reply`, {
+          const analyseRes = await fetch(`/api/emails/${encodeURIComponent(email.id)}/analyse`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               sender: email.sender,
               senderEmail: email.senderEmail,
               subject: email.subject,
-              preview: email.preview,
+              body: email.body || email.preview,
             }),
+          });
+          const analyseData = await analyseRes.json();
+          const options = analyseData.options || [];
+
+          if (options.length > 0) {
+            // Step 2a: Show options
+            btn.textContent = "Draft Reply";
+            btn.disabled = false;
+            showDraftOptions(index, options);
+          } else {
+            // Step 2b: No options, draft directly
+            btn.textContent = "Drafting...";
+            box.innerHTML = '<div class="draft-box"><div class="draft-loading">Drafting reply...</div></div>';
+            await executeDraft(index);
+          }
+        } catch (err) {
+          box.innerHTML = `<div class="draft-box"><div class="draft-loading">Error: ${esc(err.message)}</div></div>`;
+          btn.disabled = false;
+          btn.textContent = "Draft Reply";
+        }
+      }
+
+      function showDraftOptions(index, options) {
+        const box = document.getElementById(`draftBox${index}`);
+        if (!box) return;
+
+        box.innerHTML = `
+          <div class="draft-box" onclick="event.stopPropagation()">
+            <div class="draft-options">
+              ${options.map(opt => `<button class="btn-option" onclick="event.stopPropagation(); pickDraftOption(${index}, '${esc(opt).replace(/'/g, "\\'")}')">${esc(opt)}</button>`).join("")}
+            </div>
+            <input type="text" class="draft-custom-input" id="customInstruction${index}" placeholder="Or give your own instruction..." onkeydown="if(event.key==='Enter'){event.stopPropagation(); pickDraftOption(${index}, this.value)}" onclick="event.stopPropagation()" />
+          </div>
+        `;
+      }
+
+      async function pickDraftOption(index, instruction) {
+        const box = document.getElementById(`draftBox${index}`);
+        const btn = document.getElementById(`btnDraft${index}`);
+        if (!box) return;
+
+        btn.disabled = true;
+        btn.textContent = "Drafting...";
+        box.innerHTML = '<div class="draft-box"><div class="draft-loading">Drafting reply...</div></div>';
+
+        await executeDraft(index, instruction);
+      }
+
+      async function executeDraft(index, instruction) {
+        const email = emails[index];
+        const box = document.getElementById(`draftBox${index}`);
+        const btn = document.getElementById(`btnDraft${index}`);
+
+        try {
+          const payload = {
+            sender: email.sender,
+            senderEmail: email.senderEmail,
+            subject: email.subject,
+            preview: email.body || email.preview,
+          };
+          if (instruction) payload.instruction = instruction;
+
+          const res = await fetch(`/api/emails/${encodeURIComponent(email.id)}/draft-reply`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
           });
           const data = await res.json();
 
