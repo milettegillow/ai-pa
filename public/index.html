@@ -235,6 +235,34 @@
         cursor: pointer;
       }
 
+      .email-card.replied {
+        background: rgba(125, 155, 118, 0.12);
+        border-radius: 6px;
+        padding: 16px 12px;
+        position: relative;
+      }
+
+      .email-card.replied .email-card-inner::after {
+        content: "✓ Replied";
+        position: absolute;
+        top: 16px;
+        right: 12px;
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--accent);
+        letter-spacing: 0.02em;
+      }
+
+      .email-card.replied .email-expanded {
+        background: var(--bg);
+        border-radius: 4px;
+      }
+
+      .email-card.fade-out {
+        opacity: 0;
+        transition: opacity 0.4s ease;
+      }
+
       .email-card-inner {
         padding: 0;
       }
@@ -244,6 +272,10 @@
         justify-content: space-between;
         align-items: baseline;
         margin-bottom: 2px;
+      }
+
+      .email-card.replied .email-header-row {
+        padding-right: 70px;
       }
 
       .email-sender {
@@ -378,6 +410,11 @@
         color: var(--text);
         border-color: var(--accent);
         background: #7c9e8a0d;
+      }
+
+      .btn-option.default-option {
+        background: rgba(125, 155, 118, 0.25);
+        color: var(--text);
       }
 
       .draft-custom-input {
@@ -1265,8 +1302,10 @@
               ? '<span class="email-unread-dot"></span>'
               : "";
 
+            const repliedClass = email._replied ? " replied" : "";
+
             return `
-          <div class="email-card" onclick="toggleEmail(${i})">
+          <div class="email-card${repliedClass}" id="emailCard${i}" onclick="toggleEmail(${i})">
             <div class="email-card-inner">
               <div class="email-header-row">
                 <div class="email-sender">${unreadDot}${esc(email.sender)}</div>
@@ -1275,7 +1314,7 @@
               <div class="email-subject">${esc(email.subject)}</div>
               <div class="email-preview">${esc(email.preview || "")}</div>
             </div>
-            <div class="email-expanded ${isExpanded ? "visible" : ""}">
+            <div class="email-expanded ${isExpanded ? "visible" : ""}" onclick="event.stopPropagation()">
               ${isExpanded ? renderRecipients(email, i) : ""}
               ${isExpanded ? renderEmailBody(email, i) : ""}
               <div class="email-actions">
@@ -1425,7 +1464,12 @@
         box.innerHTML = `
           <div class="draft-box" onclick="event.stopPropagation()">
             <div class="draft-options">
-              ${options.map(opt => `<button class="btn-option" onclick="event.stopPropagation(); pickDraftOption(${index}, '${esc(opt).replace(/'/g, "\\'")}')">${esc(opt)}</button>`).join("")}
+              ${options.map(opt => {
+                const label = typeof opt === "string" ? opt : opt.label;
+                const isDefault = typeof opt === "object" && opt.isDefault;
+                const cls = isDefault ? "btn-option default-option" : "btn-option";
+                return `<button class="${cls}" onclick="event.stopPropagation(); pickDraftOption(${index}, '${esc(label).replace(/'/g, "\\'")}')">${esc(label)}</button>`;
+              }).join("")}
             </div>
             <input type="text" class="draft-custom-input" id="customInstruction${index}" placeholder="Or give your own instruction..." onkeydown="if(event.key==='Enter'){event.stopPropagation(); pickDraftOption(${index}, this.value)}" onclick="event.stopPropagation()" />
           </div>
@@ -1500,12 +1544,102 @@
         if (box) box.innerHTML = "";
       }
 
-      function sendDraft(index) {
+      async function sendDraft(index) {
+        const email = emails[index];
         const textarea = document.getElementById(`draftTextarea${index}`);
-        if (textarea) {
-          console.log("Draft to send:", textarea.value);
-          alert("Send feature coming soon");
+        const box = document.getElementById(`draftBox${index}`);
+        if (!textarea || !box) return;
+
+        const draftText = textarea.value.trim();
+        if (!draftText) return;
+
+        // Find the send button and show sending state
+        const sendBtn = box.querySelector(".btn-send-draft");
+        const regenBtn = box.querySelector(".btn-regenerate");
+        const discardBtn = box.querySelector(".btn-discard");
+        if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = "Sending..."; }
+        if (regenBtn) regenBtn.disabled = true;
+        if (discardBtn) discardBtn.disabled = true;
+        textarea.disabled = true;
+
+        try {
+          const res = await fetch(`/api/emails/${encodeURIComponent(email.id)}/send`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ draftText }),
+          });
+          const data = await res.json();
+
+          if (data.error) {
+            box.innerHTML = `
+              <div class="draft-box" onclick="event.stopPropagation()">
+                <div class="draft-loading" style="color: #c97070;">Send failed: ${esc(data.error)}</div>
+                <textarea class="draft-textarea" id="draftTextarea${index}">${esc(draftText)}</textarea>
+                <div class="draft-actions">
+                  <button class="btn btn-send-draft btn-small" onclick="event.stopPropagation(); sendDraft(${index})">Retry Send</button>
+                  <button class="btn-discard" onclick="event.stopPropagation(); discardDraft(${index})">Discard</button>
+                </div>
+              </div>
+            `;
+            return;
+          }
+
+          // Success — mark card as replied and show mark-as-read prompt
+          email._replied = true;
+          const card = document.getElementById(`emailCard${index}`);
+          if (card) card.classList.add("replied");
+
+          box.innerHTML = `
+            <div class="draft-box" onclick="event.stopPropagation()">
+              <div class="draft-loading" style="color: var(--accent);">Sent!</div>
+              <div class="mark-read-prompt" style="margin-top: 8px; font-size: 0.7rem; color: var(--text-muted);">
+                Mark as read?
+                <button class="btn-option" onclick="event.stopPropagation(); confirmMarkRead(${index})" style="margin-left: 8px;">Yes</button>
+                <button class="btn-option" onclick="event.stopPropagation(); dismissMarkRead(${index})" style="margin-left: 4px;">No</button>
+              </div>
+            </div>
+          `;
+        } catch (err) {
+          box.innerHTML = `
+            <div class="draft-box" onclick="event.stopPropagation()">
+              <div class="draft-loading" style="color: #c97070;">Send failed: ${esc(err.message)}</div>
+              <textarea class="draft-textarea" id="draftTextarea${index}">${esc(draftText)}</textarea>
+              <div class="draft-actions">
+                <button class="btn btn-send-draft btn-small" onclick="event.stopPropagation(); sendDraft(${index})">Retry Send</button>
+                <button class="btn-discard" onclick="event.stopPropagation(); discardDraft(${index})">Discard</button>
+              </div>
+            </div>
+          `;
         }
+      }
+
+      async function confirmMarkRead(index) {
+        const email = emails[index];
+        const box = document.getElementById(`draftBox${index}`);
+        const card = document.getElementById(`emailCard${index}`);
+        try {
+          const res = await fetch(`/api/emails/${encodeURIComponent(email.id)}/read`, { method: "POST" });
+          const data = await res.json();
+          if (data.ok) {
+            // Fade out then remove
+            if (card) {
+              card.classList.add("fade-out");
+              await new Promise(r => setTimeout(r, 400));
+            }
+            emails.splice(index, 1);
+            expandedEmail = null;
+            const subEl = document.getElementById("emailSub");
+            subEl.textContent = emails.length === 0 ? "" : `${emails.length} unread`;
+            renderEmails();
+          }
+        } catch (err) {
+          if (box) box.innerHTML = `<div class="draft-box"><div class="draft-loading" style="color: #c97070;">Failed: ${esc(err.message)}</div></div>`;
+        }
+      }
+
+      function dismissMarkRead(index) {
+        const box = document.getElementById(`draftBox${index}`);
+        if (box) box.innerHTML = "";
       }
 
       // IMPORTANT: requires double confirmation before marking as read

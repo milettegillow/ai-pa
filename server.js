@@ -265,6 +265,100 @@ app.post('/api/emails/:id/read', async (req, res) => {
   }
 });
 
+// Convert plain text draft to HTML with proper line breaks and hyperlinks
+function draftToHtml(text) {
+  // Build a map of known URLs to friendly labels from toolkit
+  const toolkit = loadToolkit();
+  const linkMap = {};
+  if (toolkit.links?.length) {
+    for (const link of toolkit.links) {
+      linkMap[link.url] = link.label;
+    }
+  }
+
+  // Escape HTML entities
+  let html = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // Replace URLs with anchor tags — match known toolkit links first, then generic URLs
+  html = html.replace(/https?:\/\/[^\s<>&)]+/g, (url) => {
+    // Decode the escaped URL for matching
+    const decoded = url.replace(/&amp;/g, '&');
+    // Check if this URL matches a known toolkit link
+    let label = null;
+    for (const [knownUrl, knownLabel] of Object.entries(linkMap)) {
+      if (decoded.startsWith(knownUrl) || knownUrl.startsWith(decoded)) {
+        label = knownLabel;
+        break;
+      }
+    }
+    if (!label) {
+      // Use domain name as fallback label
+      try {
+        const domain = new URL(decoded).hostname.replace(/^www\./, '');
+        label = domain;
+      } catch {
+        label = 'link';
+      }
+    }
+    return `<a href="${decoded}">${label}</a>`;
+  });
+
+  // Convert line breaks to <br> tags
+  html = html.replace(/\r?\n/g, '<br>');
+
+  return html;
+}
+
+// Send reply — calls MCP reply-mail-message tool
+app.post('/api/emails/:id/send', async (req, res) => {
+  try {
+    const { draftText } = req.body;
+    if (!draftText) {
+      return res.status(400).json({ error: 'draftText is required' });
+    }
+
+    const messageId = req.params.id;
+    const htmlBody = draftToHtml(draftText);
+    console.log(`[send] Sending reply to message ${messageId.slice(0, 20)}...`);
+    console.log('[send] HTML body:', htmlBody);
+
+    await callTool('reply-mail-message', {
+      messageId,
+      body: {
+        Message: {
+          body: {
+            contentType: 'html',
+            content: htmlBody,
+          },
+        },
+      },
+    });
+
+    // Graph API auto-marks as read on reply — undo that so only explicit
+    // user confirmation marks it as read
+    try {
+      await callTool('update-mail-message', {
+        messageId,
+        body: { isRead: false },
+      });
+    } catch (e) {
+      console.warn('[send] Could not reset isRead:', e.message);
+    }
+
+    // Invalidate email cache so the inbox refreshes
+    delete cache['emails'];
+
+    console.log('[send] Reply sent successfully');
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[/api/emails/:id/send] ERROR:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Draft reply — uses Claude Agent SDK with draft-specific system prompt + toolkit context
 // Strip quoted reply chains from email threads — keep only the latest message
 function stripQuotedReplies(text) {
@@ -309,8 +403,10 @@ Body: ${latestMessage || '(no content)'}
 
 Consider: Are there clear response options? (e.g. yes/no to a request, accept/decline an invitation, different tones like enthusiastic vs polite decline, option A vs option B)
 
-If YES — return a JSON array of 2-4 short option labels (max 6 words each).
+If YES — return a JSON array of 2-4 objects, each with "label" (max 6 words) and "isDefault" (boolean). Mark exactly ONE option as isDefault: true — the most likely or natural response. Default logic: if an option involves sending a scheduling/Calendly link, that's the default for meeting requests. Otherwise, the straightforward positive reply is the default.
 If NO — return an empty JSON array [].
+
+Example: [{"label": "Accept and send Calendly", "isDefault": true}, {"label": "Politely decline", "isDefault": false}]
 
 Return ONLY the JSON array, nothing else.`;
 
@@ -333,7 +429,15 @@ Return ONLY the JSON array, nothing else.`;
     try {
       const jsonMatch = rawResult.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
-        options = JSON.parse(jsonMatch[0]);
+        const parsed = JSON.parse(jsonMatch[0]);
+        // Normalise: accept both string[] and {label, isDefault}[]
+        options = parsed.map(item => {
+          if (typeof item === 'string') return { label: item, isDefault: false };
+          return { label: item.label || '', isDefault: !!item.isDefault };
+        });
+        // Ensure exactly one default
+        const hasDefault = options.some(o => o.isDefault);
+        if (!hasDefault && options.length > 0) options[0].isDefault = true;
       }
     } catch (e) {
       console.error('[analyse] Failed to parse:', e.message);
