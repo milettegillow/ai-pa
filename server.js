@@ -183,9 +183,10 @@ app.get('/api/emails', async (_req, res) => {
       return res.json({ emails: cached });
     }
 
-    const result = await callTool('list-mail-messages', {
+    const result = await callTool('list-mail-folder-messages', {
+      mailFolderId: 'Inbox',
       filter: 'isRead eq false',
-      top: 15,
+      top: 50,
       orderby: ['receivedDateTime desc'],
       select: ['id', 'subject', 'from', 'receivedDateTime', 'bodyPreview', 'isRead', 'inferenceClassification'],
     });
