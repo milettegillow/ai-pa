@@ -1276,10 +1276,18 @@ Time estimates:
 - External tasks (form, contract): 5-10 min
 - Follow-up emails: 2-3 min
 
+Orientation tasks:
+If 2+ tasks share a common theme or context dependency (e.g. multiple emails about the same project, event series, or funding round), prepend ONE "orientation" task of type "orientation" immediately before that group.
+- The orientation task helps Milette get a clear picture before diving into individual responses.
+- Set its blocksTaskIds to the ids of all tasks that depend on understanding this context.
+- estimatedMinutes: 2-5 min depending on complexity.
+- Only create orientation tasks when genuinely useful — don't force them for unrelated tasks.
+
 Ordering rules:
 1. Sort by urgency tier (red > orange > yellow > none)
 2. Within each urgency tier: tasks with no blockers first, sorted by estimatedMinutes ascending
 3. Tasks with blockers after — insert the blocker as a task immediately before its dependent task
+4. Orientation tasks always appear immediately before the group of tasks they block
 
 Urgency rules: items received >48h ago = red, >24h = orange, >12h = yellow, else none. Follow-ups with dueDate past = red, within 24h = orange, within 72h = yellow.
 
@@ -1289,14 +1297,15 @@ Return ONLY valid JSON:
   "totalEstimatedMinutes": number,
   "tasks": [
     {
-      "id": "use the EXACT id from the source item (action/followup/blocker) where possible, or generate a new UUID",
+      "id": "use the EXACT id from the source item (action/followup/blocker) where possible, or generate a new UUID for orientation tasks",
       "title": "Short action title",
       "instruction": "One sentence telling Milette exactly what to do",
-      "type": "email-reply | create-asset | external-task | follow-up",
+      "type": "email-reply | create-asset | external-task | follow-up | orientation",
       "estimatedMinutes": number,
       "urgency": "red | orange | yellow | none",
       "hasBlocker": false,
       "isBlockerFor": "dependent task id or null",
+      "blocksTaskIds": ["array of task ids this orientation task blocks — only used for type=orientation, use [] for other types"],
       "relatedEmailIds": ["array of ALL email ids related to this task — include the source email, any auto-notification emails about the same topic, and any personal emails that need a response. For example a contract-signing task might have both the automated signing link email AND a personal email asking about it. Always check ALL 20 emails for matches. Use [] if none."],
       "relatedActionItemId": "action item id or null",
       "relatedFollowUpId": "follow-up id or null",
@@ -1340,7 +1349,10 @@ Return ONLY valid JSON:
       }
       if (!task.relatedEmailIds) task.relatedEmailIds = [];
       delete task.relatedEmailId;
-      console.log(`[quest/generate]   task "${task.title}" type=${task.type} relatedEmailIds=[${task.relatedEmailIds.length}] url=${task.url || 'NULL'}`);
+      // Ensure blocksTaskIds exists
+      if (!task.blocksTaskIds) task.blocksTaskIds = [];
+      const blocksStr = task.blocksTaskIds.length ? ` blocks=[${task.blocksTaskIds.length}]` : '';
+      console.log(`[quest/generate]   task "${task.title}" type=${task.type} relatedEmailIds=[${task.relatedEmailIds.length}]${blocksStr} url=${task.url || 'NULL'}`);
     }
     res.json(quest);
   } catch (err) {
@@ -1361,6 +1373,62 @@ app.post('/api/quest/complete', (req, res) => {
   });
   saveQuests(data);
   res.json({ ok: true });
+});
+
+// Detect which quest tasks share context with a given task
+app.post('/api/quest/related-tasks', async (req, res) => {
+  try {
+    const { taskId, contextText, tasks } = req.body;
+    if (!tasks || !taskId) return res.status(400).json({ error: 'Missing tasks or taskId' });
+
+    const currentTask = tasks.find(t => t.id === taskId);
+    if (!currentTask) return res.status(400).json({ error: 'Task not found' });
+
+    const otherTasks = tasks.filter(t => t.id !== taskId);
+    if (otherTasks.length === 0) return res.json({ relatedTaskIds: [] });
+
+    const taskList = otherTasks.map(t => `- [${t.id}] "${t.title}" (type: ${t.type})`).join('\n');
+
+    const prompt = `The user is working on this quest task: "${currentTask.title}"
+They said they need context first: "${contextText}"
+
+Here are the other tasks in their quest:
+${taskList}
+
+Which of these tasks share the same context/theme dependency — i.e. the user would ALSO need the same context "${contextText}" before doing them?
+
+Return ONLY a JSON array of task ids that share this context. Return [] if none are related.
+Example: ["id1", "id2"]`;
+
+    let rawResult = '';
+    for await (const message of query({ prompt, options: {
+      systemPrompt: 'You detect shared context between tasks. Return ONLY a JSON array of task IDs. No explanation.',
+      tools: [],
+      permissionMode: 'bypassPermissions',
+      allowDangerouslySkipPermissions: true,
+      maxTurns: 1,
+    }})) {
+      if ('result' in message) rawResult = message.result;
+    }
+
+    let relatedIds = [];
+    try {
+      const match = rawResult.match(/\[[\s\S]*?\]/);
+      if (match) relatedIds = JSON.parse(match[0]);
+    } catch (e) {
+      console.error('[quest/related-tasks] Parse error:', e.message);
+    }
+
+    // Filter to only valid task ids
+    const validIds = new Set(otherTasks.map(t => t.id));
+    relatedIds = relatedIds.filter(id => validIds.has(id));
+
+    console.log(`[quest/related-tasks] "${currentTask.title}" context="${contextText}" → ${relatedIds.length} related tasks`);
+    res.json({ relatedTaskIds: relatedIds });
+  } catch (err) {
+    console.error('[quest/related-tasks] ERROR:', err.message);
+    res.json({ relatedTaskIds: [] });
+  }
 });
 
 // Generate blocker suggestions from action items

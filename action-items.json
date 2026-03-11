@@ -409,8 +409,8 @@
       "source": "email",
       "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHFo52aAAA=",
       "createdAt": "2026-03-11T11:06:24.985Z",
-      "completedAt": null,
-      "completed": false,
+      "completedAt": "2026-03-11T13:36:52.682Z",
+      "completed": true,
       "receivedAt": "2026-03-10T10:26:53Z",
       "isIntro": false
     },
@@ -552,8 +552,8 @@
       "source": "email",
       "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHFo52dAAA=",
       "createdAt": "2026-03-11T11:20:41.749Z",
-      "completedAt": null,
-      "completed": false,
+      "completedAt": "2026-03-11T13:35:17.969Z",
+      "completed": true,
       "receivedAt": "2026-03-10T15:43:30Z",
       "isIntro": false
     },

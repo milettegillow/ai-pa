@@ -32,6 +32,15 @@
       "completed": false,
       "completedAt": null,
       "createdAt": "2026-03-08T11:00:00.000Z"
+    },
+    {
+      "id": "cc6c2e58-5566-4093-a0bf-4d3a52ec46aa",
+      "name": "need to finalise the luma pages for all these events AND have an overview of all the upcoming events (some info in text messages, some on email etc)",
+      "dueDate": null,
+      "task": "Reply to Georgina at Goodwin Law, Confirm Women of Impact Attendance, Review & Share April 11th Hackathon Luma",
+      "completed": false,
+      "completedAt": null,
+      "createdAt": "2026-03-11T13:31:26.525Z"
     }
   ]
 }

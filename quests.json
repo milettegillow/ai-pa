@@ -1,0 +1,11 @@
+{
+  "quests": [
+    {
+      "id": "7a0a9cbf-9223-4619-8dd0-d2327389da7f",
+      "name": "The Quick Strike",
+      "completedAt": "2026-03-11T13:36:53.285Z",
+      "tasksCompleted": 4,
+      "totalMinutes": 91
+    }
+  ]
+}

@@ -1430,12 +1430,15 @@
         position: fixed;
         z-index: 1000;
         background: #1a1a1a;
-        border: 1px solid rgba(255,255,255,0.1);
+        border: 2px solid var(--accent);
         border-radius: 8px;
-        padding: 8px 14px;
-        max-width: 400px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        padding: 10px 16px;
+        box-shadow: 0 0 12px rgba(124, 158, 138, 0.3), 0 0 30px rgba(124, 158, 138, 0.1), 0 4px 20px rgba(0,0,0,0.6);
         pointer-events: auto;
+        /* Pinned to top of right column */
+        right: 0;
+        width: 30%;
+        box-sizing: border-box;
       }
       .quest-tooltip.visible { display: block; }
 
@@ -1518,25 +1521,41 @@
       }
       .quest-btn-skip:hover { color: rgba(255,255,255,0.5); }
 
-      /* Tooltip speech-bubble arrow */
-      .quest-tooltip::before {
-        content: '';
-        position: absolute;
-        width: 8px; height: 8px;
-        background: #1a1a1a;
-        border-left: 1px solid rgba(255,255,255,0.1);
-        border-top: 1px solid rgba(255,255,255,0.1);
-        transform: rotate(45deg);
+      /* Tooltip arrow (hidden when pinned to right column) */
+      .quest-tooltip::before { display: none; }
+
+      /* Locked/blocked task in checklist */
+      .quest-task-row.locked { opacity: 0.3; }
+      .quest-task-locked-label {
+        font-size: 10px; color: rgba(255,255,255,0.3);
+        font-style: italic; margin-left: auto;
       }
-      .quest-tooltip.arrow-top::before {
-        top: -5px; left: 24px;
+
+      /* Context/blocker action row */
+      .quest-meta-actions {
+        display: flex; gap: 12px; margin-top: 8px;
+        border-top: 1px solid rgba(255,255,255,0.06);
+        padding-top: 6px;
       }
-      .quest-tooltip.arrow-bottom::before {
-        bottom: -5px; left: 24px;
-        border-left: none; border-top: none;
-        border-right: 1px solid rgba(255,255,255,0.1);
-        border-bottom: 1px solid rgba(255,255,255,0.1);
+      .quest-meta-btn {
+        font-family: "Outfit", sans-serif;
+        font-size: 11px; font-weight: 400;
+        color: rgba(255,255,255,0.4);
+        cursor: pointer; background: none; border: none;
+        padding: 2px 0; transition: color 0.15s;
       }
+      .quest-meta-btn:hover { color: rgba(255,255,255,0.7); }
+      .quest-context-input-wrap {
+        display: flex; gap: 4px; margin-top: 6px;
+      }
+      .quest-context-input {
+        flex: 1; font-family: "Outfit", sans-serif;
+        font-size: 11px; padding: 5px 10px;
+        border: 1px solid rgba(255,255,255,0.2); border-radius: 6px;
+        background: rgba(255,255,255,0.05); color: #fff;
+        outline: none;
+      }
+      .quest-context-input:focus { border-color: rgba(255,255,255,0.4); }
 
       /* Peek overlay checklist (reused in peek modal) */
       .quest-checklist { display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px; flex-shrink: 0; }
@@ -3023,6 +3042,10 @@
             startTime: parsed.startTime || Date.now(),
             emailSubIndex: parsed.emailSubIndex || 0,
           };
+          // Ensure blocksTaskIds exists on all tasks (backward compat)
+          for (const t of questState.quest.tasks || []) {
+            if (!t.blocksTaskIds) t.blocksTaskIds = [];
+          }
           updateQuestButton();
           // Resume spotlight after emails load
           setTimeout(() => {
@@ -3071,8 +3094,14 @@
 
       function openQuestMode() {
         if (questState) {
-          // Resume spotlight
-          enterSpotlightMode();
+          // If spotlight is already active, show peek overlay; otherwise enter spotlight
+          const tooltipVisible = document.getElementById('questTooltip').classList.contains('visible');
+          if (questSpotlitEl || tooltipVisible) {
+            exitSpotlightMode();
+            openQuestPeek();
+          } else {
+            enterSpotlightMode();
+          }
           return;
         }
         document.getElementById("questOverlay").classList.add("visible");
@@ -3164,12 +3193,24 @@
 
       // ── Spotlight Mode ──
 
+      function isTaskBlocked(taskId) {
+        if (!questState) return false;
+        return questState.quest.tasks.some(t =>
+          t.type === 'orientation' &&
+          !questState.completedIds.has(t.id) &&
+          !questState.skippedIds.has(t.id) &&
+          (t.blocksTaskIds || []).includes(taskId)
+        );
+      }
+
       function getCurrentQuestTask() {
         if (!questState) return null;
         const tasks = questState.quest.tasks;
         let idx = questState.currentIndex;
         while (idx < tasks.length &&
-               (questState.completedIds.has(tasks[idx].id) || questState.skippedIds.has(tasks[idx].id))) {
+               (questState.completedIds.has(tasks[idx].id) ||
+                questState.skippedIds.has(tasks[idx].id) ||
+                isTaskBlocked(tasks[idx].id))) {
           idx++;
         }
         questState.currentIndex = idx;
@@ -3275,49 +3316,44 @@
         updateQuestPill();
         document.getElementById('questPill').classList.add('visible');
 
-        // Spotlight the target
-        const target = getSpotlightTarget(task);
+        // Spotlight the target and show tooltip immediately
+        let target = getSpotlightTarget(task);
         spotlightElement(target);
+        showQuestTooltip(task, target);
 
-        const emailIds = getTaskEmailIds(task);
+        // Auto-draft in background (don't block tooltip)
         const currentEmailId = getCurrentEmailId(task);
         const subIdx = questState.emailSubIndex || 0;
         const isFirstEmail = subIdx === 0;
 
-        // ── Auto-trigger actions based on task type and sub-step ──
         if (currentEmailId && target) {
           const emailIdx = findEmailIndex(currentEmailId);
           if (emailIdx >= 0) {
-            // For email-reply on the first email, or follow-ups: auto-draft
             if ((task.type === 'email-reply' && isFirstEmail) ||
                 (task.type === 'follow-up' && isFirstEmail)) {
-              await new Promise(r => setTimeout(r, 500));
-              await draftReply(emailIdx);
-              spotlightElement(target);
+              setTimeout(async () => {
+                await draftReply(emailIdx);
+                // Re-spotlight after DOM rebuild
+                if (questState) {
+                  target = getSpotlightTarget(task);
+                  spotlightElement(target);
+                }
+              }, 300);
             }
           }
         }
-
-        // Position tooltip below target
-        showQuestTooltip(task, target);
       }
 
       function questPillClick() {
-        if (!questState) { console.log('[quest-pill] no questState'); return; }
-        const task = getCurrentQuestTask();
-        const emailId = task ? getCurrentEmailId(task) : null;
-        const emailIdx = emailId ? findEmailIndex(emailId) : -1;
-        const el = emailId ? document.querySelector(`[data-email-id="${emailId}"]`) : null;
-        console.log('[quest-pill] click', {
-          task: task?.title, type: task?.type,
-          emailId, emailIdx, elFound: !!el,
-          emailIds: task ? getTaskEmailIds(task) : [],
-          subIdx: questState.emailSubIndex,
-          currentIndex: questState.currentIndex,
-          emailsLoaded: emails.length,
-        });
-        // Always resume spotlight — re-find email, expand, dim, tooltip
-        enterSpotlightMode();
+        if (!questState) return;
+        // If spotlight is active (element spotlit or tooltip visible), open peek overlay
+        const tooltipVisible = document.getElementById('questTooltip').classList.contains('visible');
+        if (questSpotlitEl || tooltipVisible) {
+          exitSpotlightMode();
+          openQuestPeek();
+        } else {
+          enterSpotlightMode();
+        }
       }
 
       function exitSpotlightMode() {
@@ -3343,12 +3379,24 @@
         }
       }
 
+      function recalculateQuestTime() {
+        if (!questState) return 0;
+        let remaining = 0;
+        for (const t of questState.quest.tasks) {
+          if (!questState.completedIds.has(t.id) && !questState.skippedIds.has(t.id)) {
+            remaining += (t.estimatedMinutes || 0);
+          }
+        }
+        return remaining;
+      }
+
       function updateQuestPill() {
         if (!questState) return;
         const done = questState.completedIds.size;
         const total = questState.quest.tasks.length;
+        const remainingMin = recalculateQuestTime();
         const pill = document.getElementById('questPill');
-        pill.textContent = `\u26A1 ${esc(questState.quest.questName)} \u00B7 ${done} of ${total}`;
+        pill.textContent = `\u26A1 ${esc(questState.quest.questName)} \u00B7 ${done} of ${total} \u00B7 ~${remainingMin}m left`;
       }
 
       // ── Tooltip ──
@@ -3373,8 +3421,16 @@
         const doneId = task.id;
         const nextThreadBtn = hasMoreEmails ? `<button class="quest-btn-secondary" onclick="questAdvanceEmail()">Next email in thread \u2192</button>` : '';
 
+        // Orientation task — simple "mark done when ready" flow
+        if (task.type === 'orientation') {
+          instruction = task.instruction || 'Get context before proceeding';
+          const blockedCount = (task.blocksTaskIds || []).length;
+          const blockedLabel = blockedCount ? ` (unlocks ${blockedCount} task${blockedCount > 1 ? 's' : ''})` : '';
+          actionButtons = `<button class="quest-btn-primary" onclick="completeQuestTask('${doneId}')">Got it \u2713</button>${skipBtn}${flashSpan}`;
+          instruction += blockedLabel;
+        }
         // Email not found — already read/moved/archived (any task type)
-        if (!targetEl && emailIds.length > 0) {
+        else if (!targetEl && emailIds.length > 0) {
           instruction = 'Email already read or moved — mark as done?';
           const openLinkBtn = task.url
             ? `<a href="${esc(task.url)}" target="_blank" rel="noopener" class="quest-btn-primary">Open link \u2197</a>`
@@ -3416,35 +3472,139 @@
           actionButtons = `<button class="quest-btn-primary" onclick="markDoneButReviewEmails('${doneId}')">Already done \u2713</button>${skipBtn}${flashSpan}`;
         }
 
+        // Meta actions row (not on orientation tasks)
+        const metaActions = task.type !== 'orientation'
+          ? `<div class="quest-meta-actions" id="questMetaRow">
+              <button class="quest-meta-btn" onclick="showBlockerInput('${doneId}')">\u2298 Add blocker</button>
+            </div>`
+          : '';
+
         tooltip.innerHTML = `
           <div class="quest-tooltip-title">${esc(task.title)}</div>
           ${instruction ? `<div class="quest-tooltip-instruction">${instruction}</div>` : ''}
           <div class="quest-tooltip-actions">
             ${actionButtons}
           </div>
+          ${metaActions}
         `;
 
-        // Position near the target element
+        // Pin tooltip to the top of the right column
         tooltip.classList.remove('arrow-top', 'arrow-bottom');
         tooltip.classList.add('visible');
 
-        if (targetEl) {
-          const rect = targetEl.getBoundingClientRect();
+        // Find the right column and position at its top
+        const rightCol = document.querySelector('.col-chat');
+        if (rightCol) {
+          const colRect = rightCol.getBoundingClientRect();
           const tooltipRect = tooltip.getBoundingClientRect();
-
-          // Always place below the target
-          const top = rect.bottom + 10;
-          const left = Math.max(8, Math.min(rect.left, window.innerWidth - tooltipRect.width - 8));
-          tooltip.classList.add('arrow-top');
-
-          tooltip.style.top = top + 'px';
-          tooltip.style.left = left + 'px';
+          const centerY = colRect.top + (colRect.height - tooltipRect.height) / 2;
+          tooltip.style.top = Math.max(colRect.top + 8, centerY) + 'px';
+          tooltip.style.left = '';
+          tooltip.style.right = '0px';
         } else {
-          // No target — centre it
-          const tooltipRect = tooltip.getBoundingClientRect();
-          tooltip.style.top = ((window.innerHeight - tooltipRect.height) / 2) + 'px';
-          tooltip.style.left = ((window.innerWidth - tooltipRect.width) / 2) + 'px';
+          tooltip.style.top = '50%';
+          tooltip.style.transform = 'translateY(-50%)';
+          tooltip.style.left = '';
+          tooltip.style.right = '0px';
         }
+      }
+
+      // ── Peek overlay (checklist view) ──
+
+      // ── "Need context first" inline prompt ──
+
+      function showBlockerInput(taskId) {
+        const row = document.getElementById('questMetaRow');
+        if (!row) return;
+        row.innerHTML = `
+          <div class="quest-context-input-wrap" style="width:100%">
+            <input class="quest-context-input" id="questBlockerInput" placeholder="What's blocking this?" />
+            <button class="quest-btn-primary" onclick="submitBlocker('${taskId}')">Go</button>
+          </div>
+        `;
+        const input = document.getElementById('questBlockerInput');
+        if (input) {
+          input.focus();
+          input.addEventListener('keydown', e => {
+            if (e.key === 'Enter') submitBlocker(taskId);
+          });
+        }
+      }
+
+      async function submitBlocker(taskId) {
+        const input = document.getElementById('questBlockerInput');
+        if (!input || !input.value.trim()) return;
+        const text = input.value.trim();
+        const task = questState.quest.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        // Show loading state
+        const row = document.getElementById('questMetaRow');
+        if (row) row.innerHTML = '<div style="font-size:11px;color:rgba(255,255,255,0.4)">Finding related tasks...</div>';
+
+        // Ask Claude which other tasks share this blocker
+        const remainingTasks = questState.quest.tasks.filter(t =>
+          !questState.completedIds.has(t.id) && !questState.skippedIds.has(t.id)
+        );
+        let relatedIds = [];
+        try {
+          const res = await fetch('/api/quest/related-tasks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ taskId, contextText: text, tasks: remainingTasks }),
+          });
+          const data = await res.json();
+          relatedIds = data.relatedTaskIds || [];
+        } catch (e) {
+          console.error('[blocker] Failed to find related tasks:', e);
+        }
+
+        // Collect all tasks to remove (current + related)
+        const removeIds = new Set([taskId, ...relatedIds]);
+        const removedTasks = questState.quest.tasks.filter(t => removeIds.has(t.id));
+        const removedTitles = removedTasks.map(t => t.title);
+
+        // Remove them from the quest
+        questState.quest.tasks = questState.quest.tasks.filter(t => !removeIds.has(t.id));
+        if (questState.currentIndex >= questState.quest.tasks.length) {
+          questState.currentIndex = Math.max(0, questState.quest.tasks.length - 1);
+        }
+
+        // Create blocker on the server
+        try {
+          await fetch('/api/follow-ups', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'blocker',
+              name: text,
+              task: removedTitles.join(', '),
+            }),
+          });
+          fetchFollowUps();
+        } catch (e) {
+          console.error('[blocker] Failed to create blocker:', e);
+        }
+
+        saveQuestState();
+        updateQuestPill();
+
+        // Show confirmation, then advance
+        const tooltip = document.getElementById('questTooltip');
+        const count = removeIds.size;
+        tooltip.innerHTML = `
+          <div class="quest-tooltip-title">Blocker added</div>
+          <div class="quest-tooltip-instruction">${count} task${count > 1 ? 's' : ''} removed and added to blockers</div>
+        `;
+
+        setTimeout(() => {
+          if (questState && questState.quest.tasks.length > 0) {
+            enterSpotlightMode();
+          } else {
+            exitSpotlightMode();
+            renderQuestComplete();
+          }
+        }, 2000);
       }
 
       // ── Peek overlay (checklist view) ──
@@ -3461,22 +3621,28 @@
         const currentTask = getCurrentQuestTask();
         const activeIdx = questState.currentIndex;
 
+        const remainingMin = recalculateQuestTime();
         const checklistHtml = tasks.map((t, i) => {
           const isCompleted = questState.completedIds.has(t.id);
           const isSkipped = questState.skippedIds.has(t.id);
           const isCurrent = i === activeIdx;
+          const blocked = isTaskBlocked(t.id);
           let cls = 'quest-task-row';
           if (isCompleted || isSkipped) cls += ' completed';
+          else if (blocked) cls += ' locked';
           else if (isCurrent) cls += ' current';
           else cls += ' future';
-          const indicator = isCompleted ? '\u2713' : isSkipped ? '\u2013' : isCurrent ? '\u25B6' : '\u2022';
+          const indicator = isCompleted ? '\u2713' : isSkipped ? '\u2013' : blocked ? '\uD83D\uDD12' : isCurrent ? '\u25B6' : '\u2022';
           const badges = [];
+          if (t.type === 'orientation') badges.push('<span class="quest-task-badge" style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.5)">context</span>');
           if (t.urgency && t.urgency !== 'none') badges.push(`<span class="quest-task-badge urgency-${t.urgency}">${t.urgency}</span>`);
           if (t.hasBlocker || t.isBlockerFor) badges.push('<span class="quest-task-badge blocker">\u26A0</span>');
+          const lockedLabel = blocked ? '<span class="quest-task-locked-label">needs overview first</span>' : '';
           return `<div class="${cls}">
             <span class="quest-task-indicator">${indicator}</span>
             <span class="quest-task-title">${esc(t.title)}</span>
             ${badges.join('')}
+            ${lockedLabel}
             <span class="quest-detail-time">~${t.estimatedMinutes}m</span>
           </div>`;
         }).join('');
@@ -3484,7 +3650,7 @@
         main.innerHTML = `
           <div class="quest-header">
             <div class="quest-header-name">\u26A1 ${esc(q.questName)}</div>
-            <div class="quest-header-meta">~${q.totalEstimatedMinutes} min &middot; ${done} of ${tasks.length} done</div>
+            <div class="quest-header-meta">~${remainingMin}m left &middot; ${done} of ${tasks.length} done</div>
           </div>
           <div class="quest-checklist">${checklistHtml}</div>
           <button class="quest-abandon" onclick="abandonQuest()">Abandon Quest</button>
