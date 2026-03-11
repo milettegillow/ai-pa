@@ -1229,18 +1229,37 @@ app.post('/api/quest/generate', async (req, res) => {
       `- [BLOCKER id:${b.id}] ${b.name}: ${b.task}`
     ).join('\n');
 
-    const emailsSummary = emailList.slice(0, 20).map(e => {
+    const questEmails = emailList.slice(0, 20);
+    const emailIndexMap = {}; // short index -> real email id
+    const emailsSummary = questEmails.map((e, idx) => {
+      emailIndexMap[idx] = e.id;
       // Extract URLs from the email body for Claude to use
       const bodyText = e.body || e.preview || '';
       const urlMatches = bodyText.match(/https?:\/\/[^\s<>")\]]+/g) || [];
       const uniqueUrls = [...new Set(urlMatches)].slice(0, 5);
       const urlsStr = uniqueUrls.length ? ` | URLs: ${uniqueUrls.join(', ')}` : '';
-      return `- [EMAIL id:${e.id}] From: ${e.sender} (${e.senderEmail}) | Subject: ${e.subject} | Preview: ${(e.preview || '').slice(0, 120)}${urlsStr}`;
+      return `- [EMAIL #${idx}] From: ${e.sender} (${e.senderEmail}) | Subject: ${e.subject} | Preview: ${(e.preview || '').slice(0, 120)}${urlsStr}`;
     }).join('\n');
 
     const calSummary = eventList.map(e =>
       `- ${e.title} (${new Date(e.start).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}–${new Date(e.end).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })})`
     ).join('\n');
+
+    // Gather recently completed quest tasks (last 24 hours)
+    const questData = loadQuests();
+    const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
+    const recentlyCompleted = (questData.quests || [])
+      .filter(q => q.completedAt && new Date(q.completedAt).getTime() > oneDayAgo)
+      .flatMap(q => q.completedTaskTitles || []);
+    const recentlyCompletedSummary = recentlyCompleted.length
+      ? recentlyCompleted.map(t => `- "${t}"`).join('\n')
+      : '(none)';
+
+    // Build blocker exclusion list — tasks mentioned in active blockers should not be in quest
+    const blockerTaskNames = incompleteBlockers.map(b => b.task || '').filter(Boolean);
+    const blockerExclusionSummary = blockerTaskNames.length
+      ? blockerTaskNames.map(t => `- ${t}`).join('\n')
+      : '(none)';
 
     const timeConstraint = availableMinutes
       ? `Milette has ${availableMinutes} minutes. Fit as many tasks as possible within this time, preferring to keep blocker+dependent pairs together. Cut the list at the time limit.`
@@ -1254,8 +1273,14 @@ ${actionsSummary || '(none)'}
 Follow-ups:
 ${followUpsSummary || '(none)'}
 
-Blockers:
+Blockers (active — do NOT create quest tasks for anything mentioned in these blockers, they are blocked until resolved):
 ${blockersSummary || '(none)'}
+
+Tasks blocked by active blockers (DO NOT include these or anything similar in the quest):
+${blockerExclusionSummary}
+
+Recently completed quest tasks (DO NOT include these again — they are already done):
+${recentlyCompletedSummary}
 
 Unread emails:
 ${emailsSummary || '(none)'}
@@ -1283,6 +1308,12 @@ If 2+ tasks share a common theme or context dependency (e.g. multiple emails abo
 - estimatedMinutes: 2-5 min depending on complexity.
 - Only create orientation tasks when genuinely useful — don't force them for unrelated tasks.
 
+Exclusion rules (CRITICAL — follow these strictly):
+1. NEVER include tasks that match or overlap with active blockers — if a blocker says "Confirm Women of Impact attendance", do NOT create a task about confirming Women of Impact attendance
+2. NEVER include tasks that appear in the "Recently completed quest tasks" list — they are already done
+3. NEVER include tasks for emails that are about the same topic as a completed task or active blocker
+4. Every task MUST have at least one email in relatedEmailIds (referencing an [EMAIL #N] from the list above). If an action item or follow-up has no matching unread email, do NOT include it as a quest task — it cannot be acted on right now
+
 Ordering rules:
 1. Sort by urgency tier (red > orange > yellow > none)
 2. Within each urgency tier: tasks with no blockers first, sorted by estimatedMinutes ascending
@@ -1306,7 +1337,7 @@ Return ONLY valid JSON:
       "hasBlocker": false,
       "isBlockerFor": "dependent task id or null",
       "blocksTaskIds": ["array of task ids this orientation task blocks — only used for type=orientation, use [] for other types"],
-      "relatedEmailIds": ["array of ALL email ids related to this task — include the source email, any auto-notification emails about the same topic, and any personal emails that need a response. For example a contract-signing task might have both the automated signing link email AND a personal email asking about it. Always check ALL 20 emails for matches. Use [] if none."],
+      "relatedEmailIds": [0, 3, 7, "← use the SHORT numeric indices from [EMAIL #N] tags. Include ALL related emails: source email, auto-notifications about the same topic, personal emails needing response. Check ALL 20 emails. Use [] if none."],
       "relatedActionItemId": "action item id or null",
       "relatedFollowUpId": "follow-up id or null",
       "url": "for external-task type: use the EXACT full URL from the email's URLs list (not a shortened or domain-only version). If no actionable URL found, use null and the user will find it in the email.",
@@ -1349,11 +1380,27 @@ Return ONLY valid JSON:
       }
       if (!task.relatedEmailIds) task.relatedEmailIds = [];
       delete task.relatedEmailId;
+      // Map short numeric indices back to real email IDs
+      task.relatedEmailIds = task.relatedEmailIds
+        .map(idx => {
+          if (typeof idx === 'number' && emailIndexMap[idx]) return emailIndexMap[idx];
+          if (typeof idx === 'string' && emailIndexMap[parseInt(idx)]) return emailIndexMap[parseInt(idx)];
+          return idx; // already a real ID
+        })
+        .filter(id => typeof id === 'string' && id.length > 5); // drop any unmapped indices
       // Ensure blocksTaskIds exists
       if (!task.blocksTaskIds) task.blocksTaskIds = [];
       const blocksStr = task.blocksTaskIds.length ? ` blocks=[${task.blocksTaskIds.length}]` : '';
       console.log(`[quest/generate]   task "${task.title}" type=${task.type} relatedEmailIds=[${task.relatedEmailIds.length}]${blocksStr} url=${task.url || 'NULL'}`);
     }
+    // Filter out tasks with no email association (except orientation tasks which don't need one)
+    const before = quest.tasks.length;
+    quest.tasks = quest.tasks.filter(t => t.type === 'orientation' || t.relatedEmailIds.length > 0);
+    if (quest.tasks.length < before) {
+      console.log(`[quest/generate] Dropped ${before - quest.tasks.length} tasks with no email association`);
+    }
+    // Recalculate total time
+    quest.totalEstimatedMinutes = quest.tasks.reduce((sum, t) => sum + (t.estimatedMinutes || 0), 0);
     res.json(quest);
   } catch (err) {
     console.error('[quest/generate] ERROR:', err.message);
@@ -1362,7 +1409,7 @@ Return ONLY valid JSON:
 });
 
 app.post('/api/quest/complete', (req, res) => {
-  const { name, tasksCompleted, totalMinutes } = req.body;
+  const { name, tasksCompleted, totalMinutes, completedTaskTitles } = req.body;
   const data = loadQuests();
   data.quests.push({
     id: randomUUID(),
@@ -1370,6 +1417,7 @@ app.post('/api/quest/complete', (req, res) => {
     completedAt: new Date().toISOString(),
     tasksCompleted: tasksCompleted || 0,
     totalMinutes: totalMinutes || 0,
+    completedTaskTitles: completedTaskTitles || [],
   });
   saveQuests(data);
   res.json({ ok: true });

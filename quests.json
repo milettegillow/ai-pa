@@ -6,6 +6,50 @@
       "completedAt": "2026-03-11T13:36:53.285Z",
       "tasksCompleted": 4,
       "totalMinutes": 91
+    },
+    {
+      "id": "fb8d695f-7d95-4fea-86e3-1d2d4d495bdd",
+      "name": "The Quick Strike",
+      "completedAt": "2026-03-11T14:41:29.410Z",
+      "tasksCompleted": 2,
+      "totalMinutes": 2
+    },
+    {
+      "id": "203a7165-2ef6-4f9f-965b-5df52adf1a79",
+      "name": "The Quick Strike",
+      "completedAt": "2026-03-11T18:35:58.874Z",
+      "tasksCompleted": 2,
+      "totalMinutes": 113,
+      "completedTaskTitles": [
+        "Orient: April Event Collab Updates",
+        "Review Natasha's Event Proposal"
+      ]
+    },
+    {
+      "id": "d3951dd9-ed4a-4aa8-a1a2-06929c695ba4",
+      "name": "The Quick Strike",
+      "completedAt": "2026-03-11T18:48:30.318Z",
+      "tasksCompleted": 2,
+      "totalMinutes": 5,
+      "completedTaskTitles": [
+        "RSVP to IFF Women's AI Breakfast",
+        "Check in with Brittany Gibbons"
+      ]
+    },
+    {
+      "id": "559aca30-5823-4cf7-9de9-8094b9a35203",
+      "name": "The Reimbursement Rush",
+      "completedAt": "2026-03-11T19:26:20.974Z",
+      "tasksCompleted": 6,
+      "totalMinutes": 25,
+      "completedTaskTitles": [
+        "Orient: April Event Collab Thread",
+        "Decide on AI Tool Demos",
+        "Confirm Venue with Bidisa",
+        "Follow Up with Laura Hassner",
+        "Orient: Atlassian Coupa Setup",
+        "Complete Atlassian Coupa Registration"
+      ]
     }
   ]
 }

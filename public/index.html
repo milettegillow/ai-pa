@@ -2835,6 +2835,7 @@
         const email = emails[index];
         const box = document.getElementById(`draftBox${index}`);
         const card = document.getElementById(`emailCard${index}`);
+        const shouldAdvanceQuest = questState && questState._pendingAdvance;
         try {
           const res = await fetch(`/api/emails/${encodeURIComponent(email.id)}/read`, { method: "POST" });
           const data = await res.json();
@@ -2853,11 +2854,21 @@
         } catch (err) {
           if (box) box.innerHTML = `<div class="draft-box"><div class="draft-loading" style="color: #c97070;">Failed: ${esc(err.message)}</div></div>`;
         }
+        if (shouldAdvanceQuest) {
+          questState._pendingAdvance = false;
+          saveQuestState();
+          advanceToNextQuestTask();
+        }
       }
 
       function dismissMarkRead(index) {
         const box = document.getElementById(`draftBox${index}`);
         if (box) box.innerHTML = "";
+        if (questState && questState._pendingAdvance) {
+          questState._pendingAdvance = false;
+          saveQuestState();
+          advanceToNextQuestTask();
+        }
       }
 
       // IMPORTANT: requires double confirmation before marking as read
@@ -3671,17 +3682,44 @@
           fetch(`/api/follow-ups/${task.relatedFollowUpId}/toggle`, { method: "PATCH" }).catch(() => {});
         }
 
-        // Show flash in tooltip
-        const flash = document.getElementById("questFlash");
-        if (flash) {
-          flash.textContent = "\u2713 Nice one!";
-          flash.classList.add("visible");
-        }
-
         updateQuestButton();
         updateQuestPill();
 
-        // Advance after brief flash — reset email state for next task
+        // Show inline "mark as read?" prompt under the email before advancing
+        const currentEmailId = task ? getCurrentEmailId(task) : null;
+        const emailIdx = currentEmailId ? findEmailIndex(currentEmailId) : -1;
+        if (emailIdx >= 0) {
+          questState._pendingAdvance = true;
+          saveQuestState();
+          showInlineMarkReadPrompt(emailIdx);
+        } else {
+          advanceToNextQuestTask();
+        }
+      }
+
+      function showInlineMarkReadPrompt(emailIdx) {
+        // Hide the tooltip during this transition
+        const tooltip = document.getElementById('questTooltip');
+        if (tooltip) tooltip.style.display = 'none';
+
+        // Show the mark-as-read prompt inline under the email card
+        const box = document.getElementById(`draftBox${emailIdx}`);
+        if (box) {
+          box.innerHTML = `
+            <div class="draft-box" onclick="event.stopPropagation()">
+              <div class="mark-read-prompt" style="margin-top: 8px; font-size: 0.7rem; color: var(--text-muted);">
+                Mark as read?
+                <button class="btn-option" onclick="event.stopPropagation(); confirmMarkRead(${emailIdx})" style="margin-left: 8px;">Yes</button>
+                <button class="btn-option" onclick="event.stopPropagation(); dismissMarkRead(${emailIdx})" style="margin-left: 4px;">No</button>
+              </div>
+            </div>`;
+        } else {
+          // No draft box available — advance directly
+          advanceToNextQuestTask();
+        }
+      }
+
+      function advanceToNextQuestTask() {
         questState.currentIndex++;
         questState.emailSubIndex = 0;
         saveQuestState();
@@ -3693,23 +3731,14 @@
           } else {
             enterSpotlightMode();
           }
-        }, 600);
+        }, 400);
       }
 
       function skipQuestTask(taskId) {
         questState.skippedIds.add(taskId);
         updateQuestButton();
         updateQuestPill();
-        questState.currentIndex++;
-        questState.emailSubIndex = 0;
-        saveQuestState();
-        const nextTask = getCurrentQuestTask();
-        if (!nextTask) {
-          exitSpotlightMode();
-          renderQuestComplete();
-        } else {
-          enterSpotlightMode();
-        }
+        advanceToNextQuestTask();
       }
 
       // ── Quest: Generate with AI (create-asset) ──
@@ -3754,15 +3783,16 @@
           saveQuestState();
           enterSpotlightMode();
         } else {
-          // No more emails — advance to next task
-          questState.currentIndex++;
-          questState.emailSubIndex = 0;
-          saveQuestState();
-          setTimeout(() => {
-            const nextTask = getCurrentQuestTask();
-            if (!nextTask) { exitSpotlightMode(); renderQuestComplete(); }
-            else enterSpotlightMode();
-          }, 400);
+          // No more emails — show inline mark-as-read prompt before advancing
+          const currentEmailId = getCurrentEmailId(task);
+          const emailIdx = currentEmailId ? findEmailIndex(currentEmailId) : -1;
+          if (emailIdx >= 0) {
+            questState._pendingAdvance = true;
+            saveQuestState();
+            showInlineMarkReadPrompt(emailIdx);
+          } else {
+            advanceToNextQuestTask();
+          }
         }
       }
 
@@ -3824,7 +3854,17 @@
           await fetch("/api/quest/complete", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name: q.questName, tasksCompleted: done, totalMinutes: elapsed }),
+            body: JSON.stringify({
+              name: q.questName,
+              tasksCompleted: done,
+              totalMinutes: elapsed,
+              completedTaskTitles: q.tasks
+                .filter(t => questState.completedIds.has(t.id))
+                .map(t => t.title),
+              completedEmailSubjects: q.tasks
+                .filter(t => questState.completedIds.has(t.id) && t.relatedEmailIds?.length)
+                .map(t => t.title),
+            }),
           });
           await fetchQuestHistory();
         } catch (err) {
