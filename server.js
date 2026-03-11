@@ -11,7 +11,7 @@ import 'dotenv/config';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 app.use(express.json());
-app.use(express.static(join(__dirname, 'public')));
+app.use(express.static(join(__dirname, 'public'), { etag: false, maxAge: 0 }));
 
 const PORT = process.env.PORT || 3000;
 
@@ -1229,9 +1229,14 @@ app.post('/api/quest/generate', async (req, res) => {
       `- [BLOCKER id:${b.id}] ${b.name}: ${b.task}`
     ).join('\n');
 
-    const emailsSummary = emailList.slice(0, 20).map(e =>
-      `- [EMAIL id:${e.id}] From: ${e.sender} (${e.senderEmail}) | Subject: ${e.subject} | Preview: ${(e.preview || '').slice(0, 80)}`
-    ).join('\n');
+    const emailsSummary = emailList.slice(0, 20).map(e => {
+      // Extract URLs from the email body for Claude to use
+      const bodyText = e.body || e.preview || '';
+      const urlMatches = bodyText.match(/https?:\/\/[^\s<>")\]]+/g) || [];
+      const uniqueUrls = [...new Set(urlMatches)].slice(0, 5);
+      const urlsStr = uniqueUrls.length ? ` | URLs: ${uniqueUrls.join(', ')}` : '';
+      return `- [EMAIL id:${e.id}] From: ${e.sender} (${e.senderEmail}) | Subject: ${e.subject} | Preview: ${(e.preview || '').slice(0, 120)}${urlsStr}`;
+    }).join('\n');
 
     const calSummary = eventList.map(e =>
       `- ${e.title} (${new Date(e.start).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}–${new Date(e.end).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })})`
@@ -1292,9 +1297,10 @@ Return ONLY valid JSON:
       "urgency": "red | orange | yellow | none",
       "hasBlocker": false,
       "isBlockerFor": "dependent task id or null",
-      "relatedEmailId": "email id or null",
+      "relatedEmailIds": ["array of ALL email ids related to this task — include the source email, any auto-notification emails about the same topic, and any personal emails that need a response. For example a contract-signing task might have both the automated signing link email AND a personal email asking about it. Always check ALL 20 emails for matches. Use [] if none."],
       "relatedActionItemId": "action item id or null",
       "relatedFollowUpId": "follow-up id or null",
+      "url": "for external-task type: use the EXACT full URL from the email's URLs list (not a shortened or domain-only version). If no actionable URL found, use null and the user will find it in the email.",
       "suggestedAction": "what the app should do e.g. 'open email + pre-draft response' or 'mark done when ready'"
     }
   ]
@@ -1327,6 +1333,15 @@ Return ONLY valid JSON:
     }
 
     console.log(`[quest/generate] "${quest.questName}" — ${(quest.tasks || []).length} tasks, ~${quest.totalEstimatedMinutes} min`);
+    for (const task of quest.tasks || []) {
+      // Normalize: support both old relatedEmailId (string) and new relatedEmailIds (array)
+      if (task.relatedEmailId && !task.relatedEmailIds) {
+        task.relatedEmailIds = [task.relatedEmailId];
+      }
+      if (!task.relatedEmailIds) task.relatedEmailIds = [];
+      delete task.relatedEmailId;
+      console.log(`[quest/generate]   task "${task.title}" type=${task.type} relatedEmailIds=[${task.relatedEmailIds.length}] url=${task.url || 'NULL'}`);
+    }
     res.json(quest);
   } catch (err) {
     console.error('[quest/generate] ERROR:', err.message);

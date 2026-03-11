@@ -1252,22 +1252,20 @@
         padding: 6px 0;
       }
 
-      /* ── Quest Mode Overlay ──────────────────────── */
+      /* ── Quest Mode ──────────────────────────────── */
 
+      /* Setup/Peek/Complete overlay (centred modal) */
       .quest-overlay {
         display: none;
         position: fixed;
         inset: 0;
-        z-index: 1000;
+        z-index: 1100;
         background: rgba(10, 10, 8, 0.85);
         backdrop-filter: blur(8px);
         align-items: center;
         justify-content: center;
       }
-
-      .quest-overlay.visible {
-        display: flex;
-      }
+      .quest-overlay.visible { display: flex; }
 
       .quest-panel {
         position: relative;
@@ -1280,7 +1278,6 @@
         display: flex;
         overflow: hidden;
       }
-
       .quest-close {
         position: absolute;
         top: 12px;
@@ -1293,7 +1290,6 @@
         z-index: 2;
         line-height: 1;
       }
-
       .quest-close:hover { color: var(--text); }
 
       .quest-main {
@@ -1303,7 +1299,6 @@
         display: flex;
         flex-direction: column;
       }
-
       .quest-sidebar {
         flex: 3;
         border-left: 1px solid var(--border);
@@ -1312,7 +1307,6 @@
         flex-direction: column;
         background: var(--bg);
       }
-
       .quest-sidebar-title {
         font-size: 13px;
         font-weight: 500;
@@ -1321,7 +1315,6 @@
         letter-spacing: 0.1em;
         margin-bottom: 16px;
       }
-
       .quest-history {
         flex: 1;
         overflow-y: auto;
@@ -1329,26 +1322,22 @@
         flex-direction: column;
         gap: 8px;
       }
-
       .quest-history-item {
         background: var(--bg-card);
         border: 1px solid var(--border);
         border-radius: 6px;
         padding: 10px 12px;
       }
-
       .quest-history-name {
         font-size: 13px;
         font-weight: 500;
         color: var(--text);
       }
-
       .quest-history-meta {
         font-size: 11px;
         color: var(--text-faded);
         margin-top: 2px;
       }
-
       .quest-sidebar-footer {
         flex-shrink: 0;
         font-size: 11px;
@@ -1359,7 +1348,6 @@
       }
 
       /* Setup screen */
-
       .quest-setup {
         flex: 1;
         display: flex;
@@ -1368,349 +1356,233 @@
         justify-content: center;
         gap: 24px;
       }
-
-      .quest-setup-title {
-        font-size: 20px;
-        font-weight: 500;
-        color: var(--text);
-      }
-
-      .quest-setup-subtitle {
-        font-size: 14px;
-        color: var(--text-muted);
-        margin-top: -12px;
-      }
-
-      .quest-time-options {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        justify-content: center;
-      }
-
+      .quest-setup-title { font-size: 20px; font-weight: 500; color: var(--text); }
+      .quest-setup-subtitle { font-size: 14px; color: var(--text-muted); margin-top: -12px; }
+      .quest-time-options { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
       .quest-time-btn {
         font-family: "Outfit", sans-serif;
-        font-size: 13px;
-        font-weight: 400;
+        font-size: 13px; font-weight: 400;
         padding: 10px 20px;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        background: transparent;
-        color: var(--text);
-        cursor: pointer;
-        transition: all 0.15s;
+        border: 1px solid var(--border); border-radius: 8px;
+        background: transparent; color: var(--text);
+        cursor: pointer; transition: all 0.15s;
       }
-
-      .quest-time-btn:hover {
-        border-color: var(--accent);
-        color: var(--accent);
-      }
-
-      .quest-time-btn.selected {
-        border-color: var(--accent);
-        background: rgba(124, 158, 138, 0.12);
-        color: var(--accent);
-      }
-
+      .quest-time-btn:hover { border-color: var(--accent); color: var(--accent); }
+      .quest-time-btn.selected { border-color: var(--accent); background: rgba(124,158,138,0.12); color: var(--accent); }
       .quest-generate-btn {
         font-family: "Outfit", sans-serif;
-        font-size: 14px;
-        font-weight: 500;
-        padding: 12px 32px;
-        border: none;
-        border-radius: 10px;
-        background: var(--accent);
-        color: var(--bg);
-        cursor: pointer;
-        transition: opacity 0.15s;
+        font-size: 14px; font-weight: 500;
+        padding: 12px 32px; border: none; border-radius: 10px;
+        background: var(--accent); color: var(--bg);
+        cursor: pointer; transition: opacity 0.15s;
       }
-
       .quest-generate-btn:hover { opacity: 0.85; }
       .quest-generate-btn:disabled { opacity: 0.4; cursor: default; }
 
-      /* Active quest */
+      /* Spotlight dim overlay */
+      .quest-spotlight-dim {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 900;
+        background: rgba(10, 10, 8, 0.5);
+        pointer-events: none;
+      }
+      .quest-spotlight-dim.visible { display: block; }
 
-      .quest-header {
-        display: flex;
-        align-items: baseline;
-        gap: 16px;
-        margin-bottom: 20px;
-        flex-shrink: 0;
+      /* Spotlighted element */
+      .quest-spotlit {
+        position: relative !important;
+        z-index: 950 !important;
+        box-shadow: 0 0 0 4px var(--accent), 0 0 30px rgba(124, 158, 138, 0.25);
+        border-radius: 4px;
+        transition: box-shadow 0.3s;
+        pointer-events: auto;
       }
 
-      .quest-header-name {
-        font-size: 20px;
-        font-weight: 500;
-        color: var(--accent);
-      }
-
-      .quest-header-meta {
-        font-size: 13px;
-        color: var(--text-faded);
-      }
-
-      .quest-checklist {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        margin-bottom: 20px;
-        flex-shrink: 0;
-      }
-
-      .quest-task-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 6px 10px;
-        border-radius: 6px;
-        font-size: 13px;
-        transition: background 0.15s;
-      }
-
-      .quest-task-row.current {
-        background: rgba(124, 158, 138, 0.1);
-        border-left: 3px solid var(--accent);
-      }
-
-      .quest-task-row.completed {
-        opacity: 0.4;
-      }
-
-      .quest-task-row.completed .quest-task-title {
-        text-decoration: line-through;
-      }
-
-      .quest-task-row.future {
-        opacity: 0.6;
-      }
-
-      .quest-task-indicator {
-        width: 18px;
-        font-size: 12px;
-        text-align: center;
-        flex-shrink: 0;
-      }
-
-      .quest-task-title {
-        flex: 1;
-      }
-
-      .quest-task-badge {
-        font-size: 10px;
-        padding: 2px 6px;
-        border-radius: 6px;
-        flex-shrink: 0;
-      }
-
-      .quest-task-badge.urgency-red { background: rgba(224, 82, 82, 0.15); color: #e05252; }
-      .quest-task-badge.urgency-orange { background: rgba(224, 160, 80, 0.15); color: #e0a050; }
-      .quest-task-badge.urgency-yellow { background: rgba(212, 196, 85, 0.15); color: #d4c455; }
-      .quest-task-badge.blocker { background: rgba(212, 196, 85, 0.15); color: #d4c455; }
-
-      /* Task detail card */
-
-      .quest-detail {
-        flex: 1;
-        min-height: 0;
-        background: var(--bg);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        overflow-y: auto;
-      }
-
-      .quest-detail-title {
-        font-size: 16px;
-        font-weight: 500;
-        color: var(--text);
-      }
-
-      .quest-detail-instruction {
-        font-size: 13px;
-        color: var(--text-muted);
-        line-height: 1.5;
-      }
-
-      .quest-detail-time {
-        font-size: 12px;
-        color: var(--text-faded);
-      }
-
-      .quest-guided-area {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        min-height: 0;
-      }
-
-      .quest-email-preview {
+      /* Progress pill */
+      .quest-pill {
+        display: none;
+        position: fixed;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1050;
         background: var(--bg-card);
         border: 1px solid var(--border);
-        border-radius: 6px;
-        padding: 12px;
+        border-radius: 20px;
+        padding: 6px 18px;
+        font-family: "Outfit", sans-serif;
         font-size: 12px;
-      }
-
-      .quest-email-preview-sender {
         font-weight: 500;
-        color: var(--text);
-        margin-bottom: 2px;
+        color: var(--accent);
+        cursor: pointer;
+        white-space: nowrap;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+        transition: background 0.15s;
       }
+      .quest-pill.visible { display: block; }
+      .quest-pill:hover { background: var(--bg); }
 
-      .quest-email-preview-subject {
-        color: var(--text-muted);
-        margin-bottom: 4px;
+      /* Tooltip */
+      .quest-tooltip {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        background: #1a1a1a;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        padding: 8px 14px;
+        max-width: 400px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        pointer-events: auto;
       }
+      .quest-tooltip.visible { display: block; }
 
-      .quest-email-preview-body {
-        color: var(--text-faded);
+      .quest-tooltip-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #fff;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        line-height: 1.3;
       }
-
-      .quest-draft-area textarea {
-        width: 100%;
-        min-height: 80px;
-        max-height: 150px;
-        resize: vertical;
-        font-family: "Outfit", sans-serif;
-        font-size: 13px;
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: 6px;
-        color: var(--text);
-        padding: 10px;
-        line-height: 1.5;
+      .quest-tooltip-instruction {
+        font-size: 11px;
+        color: rgba(255,255,255,0.45);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.3;
+        margin-bottom: 6px;
       }
-
-      .quest-draft-area textarea:focus {
-        outline: none;
-        border-color: var(--accent);
-      }
-
-      .quest-actions {
+      .quest-tooltip-actions {
         display: flex;
-        gap: 10px;
-        flex-shrink: 0;
-        margin-top: auto;
-        padding-top: 8px;
+        gap: 4px;
+        align-items: center;
       }
-
-      .quest-btn-done {
-        font-family: "Outfit", sans-serif;
-        font-size: 13px;
-        font-weight: 500;
-        padding: 8px 20px;
-        border: none;
-        border-radius: 8px;
-        background: var(--accent);
-        color: var(--bg);
-        cursor: pointer;
-        transition: opacity 0.15s;
-      }
-
-      .quest-btn-done:hover { opacity: 0.85; }
-
-      .quest-btn-skip {
-        font-family: "Outfit", sans-serif;
-        font-size: 13px;
-        font-weight: 400;
-        padding: 8px 20px;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        background: transparent;
-        color: var(--text-faded);
-        cursor: pointer;
-        transition: all 0.15s;
-      }
-
-      .quest-btn-skip:hover { color: var(--text); border-color: var(--text-faded); }
-
-      .quest-btn-action {
-        font-family: "Outfit", sans-serif;
-        font-size: 13px;
-        font-weight: 500;
-        padding: 8px 16px;
-        border: 1px solid var(--accent);
-        border-radius: 8px;
-        background: transparent;
-        color: var(--accent);
-        cursor: pointer;
-        transition: all 0.15s;
-      }
-
-      .quest-btn-action:hover { background: rgba(124, 158, 138, 0.1); }
-      .quest-btn-action:disabled { opacity: 0.4; cursor: default; }
-
-      .quest-flash {
-        font-size: 13px;
+      .quest-tooltip-flash {
+        font-size: 11px;
         font-weight: 500;
         color: var(--accent);
         opacity: 0;
         transition: opacity 0.3s;
+        margin-left: 4px;
       }
+      .quest-tooltip-flash.visible { opacity: 1; }
 
-      .quest-flash.visible { opacity: 1; }
-
-      .quest-abandon {
-        font-size: 11px;
-        color: var(--text-faded);
-        text-decoration: underline;
-        cursor: pointer;
-        background: none;
-        border: none;
+      /* Primary action button — sage green, prominent */
+      .quest-btn-primary {
         font-family: "Outfit", sans-serif;
-        margin-top: 12px;
-        align-self: flex-start;
+        font-size: 11px; font-weight: 600;
+        padding: 5px 14px; border: none; border-radius: 6px;
+        background: var(--accent); color: var(--bg);
+        cursor: pointer; transition: opacity 0.15s;
+        white-space: nowrap;
+        text-decoration: none; display: inline-block; text-align: center;
+      }
+      .quest-btn-primary:hover { opacity: 0.85; }
+
+      /* Outlined action — white border, prominent secondary */
+      .quest-btn-outlined {
+        font-family: "Outfit", sans-serif;
+        font-size: 11px; font-weight: 500;
+        padding: 5px 14px; border: 1px solid rgba(255,255,255,0.35); border-radius: 6px;
+        background: transparent; color: rgba(255,255,255,0.85);
+        cursor: pointer; transition: all 0.15s;
+        white-space: nowrap;
+        text-decoration: none; display: inline-block; text-align: center;
+      }
+      .quest-btn-outlined:hover { border-color: rgba(255,255,255,0.6); color: #fff; }
+
+      /* Muted text action — no background, no border */
+      .quest-btn-secondary {
+        font-family: "Outfit", sans-serif;
+        font-size: 11px; font-weight: 400;
+        padding: 4px 6px; border: none; border-radius: 4px;
+        background: transparent; color: rgba(255,255,255,0.4);
+        cursor: pointer; transition: color 0.15s;
+        white-space: nowrap;
+      }
+      .quest-btn-secondary:hover { color: rgba(255,255,255,0.75); }
+
+      /* Skip — smallest, most muted, pushed right */
+      .quest-btn-skip {
+        font-family: "Outfit", sans-serif;
+        font-size: 10px; font-weight: 400;
+        padding: 4px 6px; border: none; border-radius: 4px;
+        background: transparent; color: rgba(255,255,255,0.25);
+        cursor: pointer; transition: color 0.15s;
+        margin-left: auto; white-space: nowrap;
+      }
+      .quest-btn-skip:hover { color: rgba(255,255,255,0.5); }
+
+      /* Tooltip speech-bubble arrow */
+      .quest-tooltip::before {
+        content: '';
+        position: absolute;
+        width: 8px; height: 8px;
+        background: #1a1a1a;
+        border-left: 1px solid rgba(255,255,255,0.1);
+        border-top: 1px solid rgba(255,255,255,0.1);
+        transform: rotate(45deg);
+      }
+      .quest-tooltip.arrow-top::before {
+        top: -5px; left: 24px;
+      }
+      .quest-tooltip.arrow-bottom::before {
+        bottom: -5px; left: 24px;
+        border-left: none; border-top: none;
+        border-right: 1px solid rgba(255,255,255,0.1);
+        border-bottom: 1px solid rgba(255,255,255,0.1);
       }
 
+      /* Peek overlay checklist (reused in peek modal) */
+      .quest-checklist { display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px; flex-shrink: 0; }
+      .quest-task-row {
+        display: flex; align-items: center; gap: 10px;
+        padding: 6px 10px; border-radius: 6px;
+        font-size: 13px; transition: background 0.15s;
+      }
+      .quest-task-row.current { background: rgba(124,158,138,0.1); border-left: 3px solid var(--accent); }
+      .quest-task-row.completed { opacity: 0.4; }
+      .quest-task-row.completed .quest-task-title { text-decoration: line-through; }
+      .quest-task-row.future { opacity: 0.6; }
+      .quest-task-indicator { width: 18px; font-size: 12px; text-align: center; flex-shrink: 0; }
+      .quest-task-title { flex: 1; }
+      .quest-task-badge { font-size: 10px; padding: 2px 6px; border-radius: 6px; flex-shrink: 0; }
+      .quest-task-badge.urgency-red { background: rgba(224,82,82,0.15); color: #e05252; }
+      .quest-task-badge.urgency-orange { background: rgba(224,160,80,0.15); color: #e0a050; }
+      .quest-task-badge.urgency-yellow { background: rgba(212,196,85,0.15); color: #d4c455; }
+      .quest-task-badge.blocker { background: rgba(212,196,85,0.15); color: #d4c455; }
+      .quest-detail-time { font-size: 12px; color: var(--text-faded); }
+      .quest-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 20px; flex-shrink: 0; }
+      .quest-header-name { font-size: 20px; font-weight: 500; color: var(--accent); }
+      .quest-header-meta { font-size: 13px; color: var(--text-faded); }
+      .quest-abandon {
+        font-size: 11px; color: var(--text-faded); text-decoration: underline;
+        cursor: pointer; background: none; border: none;
+        font-family: "Outfit", sans-serif; margin-top: 12px; align-self: flex-start;
+      }
       .quest-abandon:hover { color: var(--text-muted); }
 
       /* Complete screen */
-
       .quest-complete {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 20px;
+        flex: 1; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 20px;
       }
-
-      .quest-seal {
-        width: 140px;
-        height: 140px;
-      }
-
-      .quest-complete-title {
-        font-size: 22px;
-        font-weight: 500;
-        color: var(--text);
-      }
-
-      .quest-complete-meta {
-        font-size: 14px;
-        color: var(--text-muted);
-      }
-
+      .quest-seal { width: 140px; height: 140px; }
+      .quest-complete-title { font-size: 22px; font-weight: 500; color: var(--text); }
+      .quest-complete-meta { font-size: 14px; color: var(--text-muted); }
       .quest-complete-btn {
         font-family: "Outfit", sans-serif;
-        font-size: 14px;
-        font-weight: 500;
+        font-size: 14px; font-weight: 500;
         padding: 10px 28px;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        background: transparent;
-        color: var(--text);
-        cursor: pointer;
-        margin-top: 8px;
+        border: 1px solid var(--border); border-radius: 8px;
+        background: transparent; color: var(--text);
+        cursor: pointer; margin-top: 8px;
       }
-
       .quest-complete-btn:hover { border-color: var(--text-faded); }
 
       ::-webkit-scrollbar {
@@ -2553,7 +2425,7 @@
             const repliedClass = email._replied ? " replied" : "";
 
             return `
-          <div class="email-card${repliedClass}" id="emailCard${i}" onclick="toggleEmail(${i})">
+          <div class="email-card${repliedClass}" id="emailCard${i}" data-email-id="${email.id}" onclick="toggleEmail(${i})">
             <div class="email-card-inner">
               <div class="email-header-row">
                 <div class="email-sender">${unreadDot}${esc(email.sender)}</div>
@@ -2660,6 +2532,20 @@
       function toggleEmail(index) {
         expandedEmail = expandedEmail === index ? null : index;
         renderEmails();
+        // Re-spotlight and re-show tooltip if quest is active (DOM was rebuilt)
+        if (questState) {
+          const task = getCurrentQuestTask();
+          if (task) {
+            const currentEmailId = getCurrentEmailId(task);
+            if (currentEmailId) {
+              const el = document.querySelector(`[data-email-id="${currentEmailId}"]`);
+              if (el) {
+                spotlightElement(el);
+                showQuestTooltip(task, el);
+              }
+            }
+          }
+        }
       }
 
       async function draftReply(index) {
@@ -2899,6 +2785,9 @@
           const card = document.getElementById(`emailCard${index}`);
           if (card) card.classList.add("replied");
 
+          // Auto-complete quest task if this email is the current quest target
+          questAutoCompleteForEmail(email.id);
+
           box.innerHTML = `
             <div class="draft-box" onclick="event.stopPropagation()">
               <div class="draft-loading" style="color: var(--accent);">Sent!</div>
@@ -2938,7 +2827,7 @@
             }
             emails.splice(index, 1);
             expandedEmail = null;
-            const subEl = document.getElementById("emailSub");
+            const subEl = document.getElementById("inboxSubheading");
             subEl.textContent = emails.length === 0 ? "" : `${emails.length} unread`;
             renderEmails();
           }
@@ -2962,7 +2851,7 @@
           if (data.ok) {
             emails.splice(index, 1);
             expandedEmail = null;
-            const subEl = document.getElementById("emailSub");
+            const subEl = document.getElementById("inboxSubheading");
             subEl.textContent = emails.length === 0 ? "" : `${emails.length} unread`;
             renderEmails();
           } else {
@@ -3100,12 +2989,53 @@
 
       // ── Quest Mode ──────────────────────────────────
 
-      let questState = null; // { quest, currentIndex, completedIds, startTime }
+      let questState = null; // { quest, currentIndex, completedIds, skippedIds, startTime, emailSubIndex }
       let questHistory = [];
       let questSelectedMinutes = null;
+      let questSpotlitEl = null; // currently spotlighted DOM element
 
-      // Fetch quest history on init
+      function saveQuestState() {
+        if (!questState) {
+          localStorage.removeItem('questState');
+          return;
+        }
+        const toSave = {
+          quest: questState.quest,
+          currentIndex: questState.currentIndex,
+          completedIds: [...questState.completedIds],
+          skippedIds: [...questState.skippedIds],
+          startTime: questState.startTime,
+          emailSubIndex: questState.emailSubIndex || 0,
+        };
+        localStorage.setItem('questState', JSON.stringify(toSave));
+      }
+
+      function restoreQuestState() {
+        try {
+          const saved = localStorage.getItem('questState');
+          if (!saved) return;
+          const parsed = JSON.parse(saved);
+          questState = {
+            quest: parsed.quest,
+            currentIndex: parsed.currentIndex || 0,
+            completedIds: new Set(parsed.completedIds || []),
+            skippedIds: new Set(parsed.skippedIds || []),
+            startTime: parsed.startTime || Date.now(),
+            emailSubIndex: parsed.emailSubIndex || 0,
+          };
+          updateQuestButton();
+          // Resume spotlight after emails load
+          setTimeout(() => {
+            if (questState) enterSpotlightMode();
+          }, 2000);
+        } catch (e) {
+          console.error('[quest] Failed to restore state:', e);
+          localStorage.removeItem('questState');
+        }
+      }
+
       fetchQuestHistory();
+      restoreQuestState();
 
       async function fetchQuestHistory() {
         try {
@@ -3129,24 +3059,24 @@
         el.innerHTML = questHistory.slice().reverse().map(q => {
           const d = new Date(q.completedAt);
           const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-          return `
-            <div class="quest-history-item">
-              <div class="quest-history-name">${esc(q.name)}</div>
-              <div class="quest-history-meta">${dateStr} &middot; ${q.tasksCompleted} tasks &middot; ${q.totalMinutes} min</div>
-            </div>
-          `;
+          return `<div class="quest-history-item">
+            <div class="quest-history-name">${esc(q.name)}</div>
+            <div class="quest-history-meta">${dateStr} &middot; ${q.tasksCompleted} tasks &middot; ${q.totalMinutes} min</div>
+          </div>`;
         }).join('');
         footer.textContent = `\u26A1 ${questHistory.length} quest${questHistory.length !== 1 ? 's' : ''} completed`;
       }
 
+      // ── Overlay helpers ──
+
       function openQuestMode() {
-        const overlay = document.getElementById("questOverlay");
-        overlay.classList.add("visible");
         if (questState) {
-          renderActiveQuest();
-        } else {
-          renderSetupScreen();
+          // Resume spotlight
+          enterSpotlightMode();
+          return;
         }
+        document.getElementById("questOverlay").classList.add("visible");
+        renderSetupScreen();
       }
 
       function closeQuestOverlay() {
@@ -3158,7 +3088,7 @@
         if (questState) {
           const done = questState.completedIds.size;
           const total = questState.quest.tasks.length;
-          const remaining = total - done;
+          const remaining = total - done - questState.skippedIds.size;
           btn.className = 'btn-quest quest-active';
           btn.innerHTML = `\u26A1 Quest Active &middot; ${done} done, ${remaining} to go`;
         } else {
@@ -3215,46 +3145,322 @@
             completedIds: new Set(),
             skippedIds: new Set(),
             startTime: Date.now(),
+            emailSubIndex: 0,
           };
+          saveQuestState();
           updateQuestButton();
-          renderActiveQuest();
+          closeQuestOverlay();
+          enterSpotlightMode();
         } catch (err) {
           console.error("[generateQuest] ERROR:", err);
           btn.textContent = "Generate Quest";
           btn.disabled = false;
-          const main = document.getElementById("questMain");
           const errDiv = document.createElement('div');
           errDiv.style.cssText = 'color: #e05252; font-size: 13px; text-align: center; margin-top: 12px;';
           errDiv.textContent = 'Error: ' + err.message;
-          main.querySelector('.quest-setup').appendChild(errDiv);
+          document.querySelector('.quest-setup')?.appendChild(errDiv);
         }
       }
 
-      // ── Active Quest ──
+      // ── Spotlight Mode ──
 
-      function renderActiveQuest() {
-        const main = document.getElementById("questMain");
-        const q = questState.quest;
-        const tasks = q.tasks;
-        const done = questState.completedIds.size;
-
-        // Find next uncompleted, unskipped task
-        let activeIdx = questState.currentIndex;
-        while (activeIdx < tasks.length &&
-               (questState.completedIds.has(tasks[activeIdx].id) || questState.skippedIds.has(tasks[activeIdx].id))) {
-          activeIdx++;
+      function getCurrentQuestTask() {
+        if (!questState) return null;
+        const tasks = questState.quest.tasks;
+        let idx = questState.currentIndex;
+        while (idx < tasks.length &&
+               (questState.completedIds.has(tasks[idx].id) || questState.skippedIds.has(tasks[idx].id))) {
+          idx++;
         }
-        questState.currentIndex = activeIdx;
+        questState.currentIndex = idx;
+        return idx < tasks.length ? tasks[idx] : null;
+      }
 
-        // Check if all done
-        if (activeIdx >= tasks.length) {
+      function findEmailIndex(emailId) {
+        if (!emailId) return -1;
+        // Exact ID match first
+        const exact = emails.findIndex(e => e.id === emailId);
+        if (exact >= 0) return exact;
+        // Fallback: try matching by subject from quest task context
+        // (IDs can change across sessions / re-fetches)
+        if (questState) {
+          const task = getCurrentQuestTask();
+          if (task?.title) {
+            const titleLower = task.title.toLowerCase();
+            const idx = emails.findIndex(e =>
+              e.subject && (titleLower.includes(e.subject.toLowerCase().slice(0, 30)) ||
+                            e.subject.toLowerCase().includes(titleLower.slice(0, 30)))
+            );
+            if (idx >= 0) return idx;
+          }
+        }
+        return -1;
+      }
+
+      // Get the relatedEmailIds array (handles both old single and new array format)
+      function getTaskEmailIds(task) {
+        if (task.relatedEmailIds && task.relatedEmailIds.length) return task.relatedEmailIds;
+        if (task.relatedEmailId) return [task.relatedEmailId];
+        return [];
+      }
+
+      // Get the current email ID for the sub-step we're on
+      function getCurrentEmailId(task) {
+        const ids = getTaskEmailIds(task);
+        const subIdx = questState.emailSubIndex || 0;
+        return subIdx < ids.length ? ids[subIdx] : null;
+      }
+
+      function spotlightEmailCard(emailId) {
+        if (!emailId) return null;
+        const emailIdx = findEmailIndex(emailId);
+        if (emailIdx < 0) return null;
+        // Only re-render if the email isn't already expanded
+        if (expandedEmail !== emailIdx) {
+          expandedEmail = emailIdx;
+          renderEmails();
+        }
+        // Try exact ID match first, then fall back to the card at the found index
+        const el = document.querySelector(`[data-email-id="${emailId}"]`)
+                || document.getElementById(`emailCard${emailIdx}`);
+        return el || null;
+      }
+
+      function getSpotlightTarget(task) {
+        const emailIds = getTaskEmailIds(task);
+
+        // Try current email, then auto-advance through remaining emails to find one still in inbox
+        if (emailIds.length > 0) {
+          let subIdx = questState.emailSubIndex || 0;
+          while (subIdx < emailIds.length) {
+            const eid = emailIds[subIdx];
+            const el = spotlightEmailCard(eid);
+            if (el) {
+              // Update subIndex if we skipped ahead
+              if (subIdx !== (questState.emailSubIndex || 0)) {
+                questState.emailSubIndex = subIdx;
+                saveQuestState();
+              }
+              return el;
+            }
+            subIdx++;
+          }
+          // All emails in the chain are gone — return null for "all handled" tooltip
+          return null;
+        }
+
+        // No email associated — fallback targets by type
+        if (task.type === 'follow-up') {
+          return document.getElementById('followUpsList')?.closest('.sidebar-section');
+        }
+        if (task.type === 'create-asset' || task.hasBlocker || task.isBlockerFor) {
+          return document.getElementById('blockersList')?.closest('.sidebar-section');
+        }
+        return document.getElementById('actionItemsList')?.closest('.action-items-section');
+      }
+
+      async function enterSpotlightMode() {
+        const task = getCurrentQuestTask();
+        if (!task) {
+          exitSpotlightMode();
           renderQuestComplete();
           return;
         }
 
-        const current = tasks[activeIdx];
+        // Initialize email sub-index if not set
+        if (questState.emailSubIndex === undefined) questState.emailSubIndex = 0;
 
-        // Build checklist
+        // Show dim + pill
+        document.getElementById('questSpotlightDim').classList.add('visible');
+        updateQuestPill();
+        document.getElementById('questPill').classList.add('visible');
+
+        // Spotlight the target
+        const target = getSpotlightTarget(task);
+        spotlightElement(target);
+
+        const emailIds = getTaskEmailIds(task);
+        const currentEmailId = getCurrentEmailId(task);
+        const subIdx = questState.emailSubIndex || 0;
+        const isFirstEmail = subIdx === 0;
+
+        // ── Auto-trigger actions based on task type and sub-step ──
+        if (currentEmailId && target) {
+          const emailIdx = findEmailIndex(currentEmailId);
+          if (emailIdx >= 0) {
+            // For email-reply on the first email, or follow-ups: auto-draft
+            if ((task.type === 'email-reply' && isFirstEmail) ||
+                (task.type === 'follow-up' && isFirstEmail)) {
+              await new Promise(r => setTimeout(r, 500));
+              await draftReply(emailIdx);
+              spotlightElement(target);
+            }
+          }
+        }
+
+        // Position tooltip below target
+        showQuestTooltip(task, target);
+      }
+
+      function questPillClick() {
+        if (!questState) { console.log('[quest-pill] no questState'); return; }
+        const task = getCurrentQuestTask();
+        const emailId = task ? getCurrentEmailId(task) : null;
+        const emailIdx = emailId ? findEmailIndex(emailId) : -1;
+        const el = emailId ? document.querySelector(`[data-email-id="${emailId}"]`) : null;
+        console.log('[quest-pill] click', {
+          task: task?.title, type: task?.type,
+          emailId, emailIdx, elFound: !!el,
+          emailIds: task ? getTaskEmailIds(task) : [],
+          subIdx: questState.emailSubIndex,
+          currentIndex: questState.currentIndex,
+          emailsLoaded: emails.length,
+        });
+        // Always resume spotlight — re-find email, expand, dim, tooltip
+        enterSpotlightMode();
+      }
+
+      function exitSpotlightMode() {
+        clearSpotlight();
+        document.getElementById('questSpotlightDim').classList.remove('visible');
+        // Keep pill visible if quest is still active — user can click to resume
+        if (!questState) document.getElementById('questPill').classList.remove('visible');
+        document.getElementById('questTooltip').classList.remove('visible');
+      }
+
+      function spotlightElement(el) {
+        clearSpotlight();
+        if (!el) return;
+        questSpotlitEl = el;
+        el.classList.add('quest-spotlit');
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      function clearSpotlight() {
+        if (questSpotlitEl) {
+          questSpotlitEl.classList.remove('quest-spotlit');
+          questSpotlitEl = null;
+        }
+      }
+
+      function updateQuestPill() {
+        if (!questState) return;
+        const done = questState.completedIds.size;
+        const total = questState.quest.tasks.length;
+        const pill = document.getElementById('questPill');
+        pill.textContent = `\u26A1 ${esc(questState.quest.questName)} \u00B7 ${done} of ${total}`;
+      }
+
+      // ── Tooltip ──
+
+      function showQuestTooltip(task, targetEl) {
+        const tooltip = document.getElementById('questTooltip');
+
+        const emailIds = getTaskEmailIds(task);
+        const subIdx = questState.emailSubIndex || 0;
+        const currentEmailId = getCurrentEmailId(task);
+        const hasMoreEmails = subIdx < emailIds.length - 1;
+        // For email-reply/follow-up: sub-emails (index > 0) get the generic mark-read flow
+        const isSubEmail = (task.type === 'email-reply' || task.type === 'follow-up') && subIdx > 0 && currentEmailId;
+
+        // Type-specific tooltip content
+        let instruction = '';
+        let actionButtons = '';
+        const skipBtn = `<button class="quest-btn-skip" onclick="skipQuestTask('${task.id}')">Skip</button>`;
+        const flashSpan = `<span class="quest-tooltip-flash" id="questFlash"></span>`;
+
+        // Shared button fragments
+        const doneId = task.id;
+        const nextThreadBtn = hasMoreEmails ? `<button class="quest-btn-secondary" onclick="questAdvanceEmail()">Next email in thread \u2192</button>` : '';
+
+        // Email not found — already read/moved/archived (any task type)
+        if (!targetEl && emailIds.length > 0) {
+          instruction = 'Email already read or moved — mark as done?';
+          const openLinkBtn = task.url
+            ? `<a href="${esc(task.url)}" target="_blank" rel="noopener" class="quest-btn-primary">Open link \u2197</a>`
+            : '';
+          actionButtons = `${openLinkBtn}<button class="${task.url ? 'quest-btn-outlined' : 'quest-btn-primary'}" onclick="completeQuestTask('${doneId}')">Already done \u2713</button>${skipBtn}${flashSpan}`;
+        }
+        // Sub-email review for email-reply/follow-up (after the primary draft)
+        else if (isSubEmail) {
+          const emailCount = emailIds.length > 1 ? ` (${subIdx + 1} of ${emailIds.length})` : '';
+          instruction = `Reply if needed, or continue${emailCount}`;
+          const doneAction = hasMoreEmails ? `questAdvanceEmail()` : `completeQuestTask('${doneId}')`;
+          const doneLabel = hasMoreEmails ? 'Next email in thread \u2192' : 'Done \u2713';
+          actionButtons = `<button class="quest-btn-primary" onclick="${doneAction}">${doneLabel}</button>${skipBtn}${flashSpan}`;
+        }
+        // Primary step logic by type
+        else if (task.type === 'email-reply') {
+          instruction = 'Review the draft below and hit Send';
+          actionButtons = `<button class="quest-btn-outlined" onclick="markDoneButReviewEmails('${doneId}')">Already done \u2713</button>${nextThreadBtn}${skipBtn}${flashSpan}`;
+        } else if (task.type === 'follow-up' && currentEmailId) {
+          instruction = 'Review the draft below and hit Send';
+          actionButtons = `<button class="quest-btn-outlined" onclick="markDoneButReviewEmails('${doneId}')">Already done \u2713</button>${nextThreadBtn}${skipBtn}${flashSpan}`;
+        } else if (task.type === 'follow-up') {
+          instruction = 'Compose and send the follow-up';
+          actionButtons = `<button class="quest-btn-primary" onclick="markDoneButReviewEmails('${doneId}')">Already done \u2713</button>${skipBtn}${flashSpan}`;
+        } else if (task.type === 'external-task') {
+          instruction = currentEmailId
+            ? 'Review email, then complete the task'
+            : 'Complete the task and mark done';
+          if (task.url) {
+            actionButtons = `<a href="${esc(task.url)}" target="_blank" rel="noopener" class="quest-btn-primary">Open link \u2197</a><button class="quest-btn-outlined" onclick="markDoneButReviewEmails('${doneId}')">Already done \u2713</button>${nextThreadBtn}${skipBtn}${flashSpan}`;
+          } else {
+            actionButtons = `<button class="quest-btn-primary" onclick="markDoneButReviewEmails('${doneId}')">Already done \u2713</button>${nextThreadBtn}${skipBtn}${flashSpan}`;
+          }
+        } else if (task.type === 'create-asset') {
+          instruction = 'Generate content with AI assistance';
+          actionButtons = `<button class="quest-btn-primary" onclick="questGenerateWithAI('${doneId}')">Generate with AI \u2192</button><button class="quest-btn-outlined" onclick="markDoneButReviewEmails('${doneId}')">Already done \u2713</button>${skipBtn}${flashSpan}`;
+        } else {
+          instruction = task.instruction || 'Complete this task';
+          actionButtons = `<button class="quest-btn-primary" onclick="markDoneButReviewEmails('${doneId}')">Already done \u2713</button>${skipBtn}${flashSpan}`;
+        }
+
+        tooltip.innerHTML = `
+          <div class="quest-tooltip-title">${esc(task.title)}</div>
+          ${instruction ? `<div class="quest-tooltip-instruction">${instruction}</div>` : ''}
+          <div class="quest-tooltip-actions">
+            ${actionButtons}
+          </div>
+        `;
+
+        // Position near the target element
+        tooltip.classList.remove('arrow-top', 'arrow-bottom');
+        tooltip.classList.add('visible');
+
+        if (targetEl) {
+          const rect = targetEl.getBoundingClientRect();
+          const tooltipRect = tooltip.getBoundingClientRect();
+
+          // Always place below the target
+          const top = rect.bottom + 10;
+          const left = Math.max(8, Math.min(rect.left, window.innerWidth - tooltipRect.width - 8));
+          tooltip.classList.add('arrow-top');
+
+          tooltip.style.top = top + 'px';
+          tooltip.style.left = left + 'px';
+        } else {
+          // No target — centre it
+          const tooltipRect = tooltip.getBoundingClientRect();
+          tooltip.style.top = ((window.innerHeight - tooltipRect.height) / 2) + 'px';
+          tooltip.style.left = ((window.innerWidth - tooltipRect.width) / 2) + 'px';
+        }
+      }
+
+      // ── Peek overlay (checklist view) ──
+
+      function openQuestPeek() {
+        if (!questState) return;
+        const overlay = document.getElementById("questOverlay");
+        overlay.classList.add("visible");
+
+        const main = document.getElementById("questMain");
+        const q = questState.quest;
+        const tasks = q.tasks;
+        const done = questState.completedIds.size;
+        const currentTask = getCurrentQuestTask();
+        const activeIdx = questState.currentIndex;
+
         const checklistHtml = tasks.map((t, i) => {
           const isCompleted = questState.completedIds.has(t.id);
           const isSkipped = questState.skippedIds.has(t.id);
@@ -3263,12 +3469,10 @@
           if (isCompleted || isSkipped) cls += ' completed';
           else if (isCurrent) cls += ' current';
           else cls += ' future';
-
           const indicator = isCompleted ? '\u2713' : isSkipped ? '\u2013' : isCurrent ? '\u25B6' : '\u2022';
           const badges = [];
           if (t.urgency && t.urgency !== 'none') badges.push(`<span class="quest-task-badge urgency-${t.urgency}">${t.urgency}</span>`);
           if (t.hasBlocker || t.isBlockerFor) badges.push('<span class="quest-task-badge blocker">\u26A0</span>');
-
           return `<div class="${cls}">
             <span class="quest-task-indicator">${indicator}</span>
             <span class="quest-task-title">${esc(t.title)}</span>
@@ -3277,223 +3481,14 @@
           </div>`;
         }).join('');
 
-        // Build detail card
-        const guidedHtml = buildGuidedArea(current);
-
         main.innerHTML = `
           <div class="quest-header">
             <div class="quest-header-name">\u26A1 ${esc(q.questName)}</div>
             <div class="quest-header-meta">~${q.totalEstimatedMinutes} min &middot; ${done} of ${tasks.length} done</div>
           </div>
           <div class="quest-checklist">${checklistHtml}</div>
-          <div class="quest-detail">
-            <div class="quest-detail-title">${esc(current.title)}</div>
-            <div class="quest-detail-instruction">${esc(current.instruction)}</div>
-            <div class="quest-detail-time">~${current.estimatedMinutes} min</div>
-            <div class="quest-guided-area" id="questGuidedArea">${guidedHtml}</div>
-            <div class="quest-actions">
-              <button class="quest-btn-done" onclick="completeQuestTask('${current.id}')">\u2713 Done</button>
-              <button class="quest-btn-skip" onclick="skipQuestTask('${current.id}')">\u2192 Skip</button>
-              <span class="quest-flash" id="questFlash"></span>
-            </div>
-          </div>
           <button class="quest-abandon" onclick="abandonQuest()">Abandon Quest</button>
         `;
-      }
-
-      function buildGuidedArea(task) {
-        if (task.type === 'email-reply') {
-          // Find the related email
-          const email = task.relatedEmailId ? emails.find(e => e.id === task.relatedEmailId) : null;
-          let html = '';
-          if (email) {
-            html += `
-              <div class="quest-email-preview">
-                <div class="quest-email-preview-sender">${esc(email.sender)}</div>
-                <div class="quest-email-preview-subject">${esc(email.subject)}</div>
-                <div class="quest-email-preview-body">${esc((email.preview || '').slice(0, 120))}</div>
-              </div>
-            `;
-            html += `<button class="quest-btn-action" onclick="questDraftReply('${task.id}', '${email.id}')">Draft Reply \u2192</button>`;
-          } else {
-            html += `<div class="quest-detail-instruction" style="color:var(--text-faded)">Related email not found in inbox. You may have already handled it, or draft manually via the PA chat.</div>`;
-          }
-          html += `<div class="quest-draft-area" id="questDraftArea"></div>`;
-          return html;
-        }
-
-        if (task.type === 'follow-up') {
-          let html = `<button class="quest-btn-action" onclick="questDraftFollowUp('${task.id}')">Draft Follow-up \u2192</button>`;
-          html += `<div class="quest-draft-area" id="questDraftArea"></div>`;
-          return html;
-        }
-
-        if (task.type === 'create-asset') {
-          return `<div style="font-size:13px;color:var(--text-muted);padding:8px 0;">Complete this outside the app, then mark done here.</div>`;
-        }
-
-        if (task.type === 'external-task') {
-          return `<div style="font-size:13px;color:var(--text-muted);padding:8px 0;">Complete this outside the app, then mark done here.</div>`;
-        }
-
-        return '';
-      }
-
-      // ── Guided Actions ──
-
-      async function questDraftReply(taskId, emailId) {
-        const area = document.getElementById("questDraftArea");
-        const btn = event.target;
-        if (!area) return;
-        btn.disabled = true;
-        btn.textContent = "Drafting...";
-        area.innerHTML = '<div style="font-size:12px;color:var(--text-faded);padding:8px 0;">Analysing and drafting...</div>';
-
-        try {
-          const email = emails.find(e => e.id === emailId);
-          if (!email) throw new Error("Email not found");
-
-          // Call analyse then draft
-          const analyseRes = await fetch(`/api/emails/${encodeURIComponent(emailId)}/analyse`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              sender: email.sender,
-              senderEmail: email.senderEmail,
-              subject: email.subject,
-              body: email.body || email.preview,
-            }),
-          });
-          const analyseData = await analyseRes.json();
-
-          // Draft with first option or no instruction
-          const instruction = (analyseData.options && analyseData.options[0]) ? analyseData.options[0] : null;
-          const draftRes = await fetch(`/api/emails/${encodeURIComponent(emailId)}/draft-reply`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              sender: email.sender,
-              senderEmail: email.senderEmail,
-              subject: email.subject,
-              preview: email.body || email.preview,
-              receivedAt: email.time || null,
-              instruction,
-            }),
-          });
-          const draftData = await draftRes.json();
-          if (draftData.error) throw new Error(draftData.error);
-
-          area.innerHTML = `
-            <textarea id="questDraftTextarea" style="width:100%;min-height:80px;max-height:150px;resize:vertical;font-family:'Outfit',sans-serif;font-size:13px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:10px;line-height:1.5;">${esc(draftData.draft)}</textarea>
-            <div style="display:flex;gap:8px;margin-top:8px;">
-              <button class="quest-btn-action" onclick="questSendReply('${taskId}', '${emailId}')">Send \u2192</button>
-              <button class="quest-btn-skip" onclick="questDraftReply('${taskId}', '${emailId}')" style="font-size:12px;padding:6px 12px;">Regenerate</button>
-            </div>
-          `;
-          btn.textContent = "Draft Reply \u2192";
-          btn.disabled = false;
-        } catch (err) {
-          area.innerHTML = `<div style="font-size:12px;color:#e05252;padding:8px 0;">Error: ${esc(err.message)}</div>`;
-          btn.textContent = "Draft Reply \u2192";
-          btn.disabled = false;
-        }
-      }
-
-      async function questSendReply(taskId, emailId) {
-        const textarea = document.getElementById("questDraftTextarea");
-        const area = document.getElementById("questDraftArea");
-        if (!textarea || !area) return;
-
-        const draftText = textarea.value.trim();
-        if (!draftText) return;
-
-        const sendBtn = event.target;
-        sendBtn.disabled = true;
-        sendBtn.textContent = "Sending...";
-
-        try {
-          const res = await fetch(`/api/emails/${encodeURIComponent(emailId)}/send`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ draftText }),
-          });
-          const data = await res.json();
-          if (data.error) throw new Error(data.error);
-
-          area.innerHTML = '<div style="font-size:13px;color:var(--accent);padding:8px 0;">Sent! Click Done to continue.</div>';
-        } catch (err) {
-          sendBtn.disabled = false;
-          sendBtn.textContent = "Send \u2192";
-          area.insertAdjacentHTML('beforeend', `<div style="font-size:12px;color:#e05252;margin-top:4px;">Send failed: ${esc(err.message)}</div>`);
-        }
-      }
-
-      async function questDraftFollowUp(taskId) {
-        const area = document.getElementById("questDraftArea");
-        const btn = event.target;
-        if (!area) return;
-        btn.disabled = true;
-        btn.textContent = "Drafting...";
-        area.innerHTML = '<div style="font-size:12px;color:var(--text-faded);padding:8px 0;">Drafting follow-up...</div>';
-
-        try {
-          const task = questState.quest.tasks.find(t => t.id === taskId);
-          const followUpId = task?.relatedFollowUpId;
-
-          if (followUpId) {
-            const res = await fetch(`/api/follow-ups/${followUpId}/draft`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({}),
-            });
-            const data = await res.json();
-            if (data.error) throw new Error(data.error);
-
-            area.innerHTML = `
-              <textarea id="questDraftTextarea" style="width:100%;min-height:80px;max-height:150px;resize:vertical;font-family:'Outfit',sans-serif;font-size:13px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:10px;line-height:1.5;">${esc(data.draft)}</textarea>
-              <div style="display:flex;gap:8px;margin-top:8px;">
-                <button class="quest-btn-action" onclick="questSendFollowUp('${taskId}', '${followUpId}')">Send \u2192</button>
-              </div>
-            `;
-          } else {
-            area.innerHTML = '<div style="font-size:12px;color:var(--text-faded);padding:8px 0;">No linked follow-up found. Use the PA chat to draft manually, then mark done.</div>';
-          }
-          btn.textContent = "Draft Follow-up \u2192";
-          btn.disabled = false;
-        } catch (err) {
-          area.innerHTML = `<div style="font-size:12px;color:#e05252;padding:8px 0;">Error: ${esc(err.message)}</div>`;
-          btn.textContent = "Draft Follow-up \u2192";
-          btn.disabled = false;
-        }
-      }
-
-      async function questSendFollowUp(taskId, followUpId) {
-        const textarea = document.getElementById("questDraftTextarea");
-        const area = document.getElementById("questDraftArea");
-        if (!textarea || !area) return;
-
-        const draftText = textarea.value.trim();
-        if (!draftText) return;
-
-        const sendBtn = event.target;
-        sendBtn.disabled = true;
-        sendBtn.textContent = "Sending...";
-
-        try {
-          const res = await fetch(`/api/follow-ups/${followUpId}/send`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ draftText }),
-          });
-          const data = await res.json();
-          if (data.error) throw new Error(data.error);
-
-          area.innerHTML = '<div style="font-size:13px;color:var(--accent);padding:8px 0;">Sent! Click Done to continue.</div>';
-        } catch (err) {
-          sendBtn.disabled = false;
-          sendBtn.textContent = "Send \u2192";
-          area.insertAdjacentHTML('beforeend', `<div style="font-size:12px;color:#e05252;margin-top:4px;">Send failed: ${esc(err.message)}</div>`);
-        }
       }
 
       // ── Task Completion ──
@@ -3510,28 +3505,146 @@
           fetch(`/api/follow-ups/${task.relatedFollowUpId}/toggle`, { method: "PATCH" }).catch(() => {});
         }
 
-        // Show flash
-        showQuestFlash();
-        updateQuestButton();
+        // Show flash in tooltip
+        const flash = document.getElementById("questFlash");
+        if (flash) {
+          flash.textContent = "\u2713 Nice one!";
+          flash.classList.add("visible");
+        }
 
-        // Advance
+        updateQuestButton();
+        updateQuestPill();
+
+        // Advance after brief flash — reset email state for next task
         questState.currentIndex++;
-        setTimeout(() => renderActiveQuest(), 600);
+        questState.emailSubIndex = 0;
+        saveQuestState();
+        setTimeout(() => {
+          const nextTask = getCurrentQuestTask();
+          if (!nextTask) {
+            exitSpotlightMode();
+            renderQuestComplete();
+          } else {
+            enterSpotlightMode();
+          }
+        }, 600);
       }
 
       function skipQuestTask(taskId) {
         questState.skippedIds.add(taskId);
         updateQuestButton();
+        updateQuestPill();
         questState.currentIndex++;
-        renderActiveQuest();
+        questState.emailSubIndex = 0;
+        saveQuestState();
+        const nextTask = getCurrentQuestTask();
+        if (!nextTask) {
+          exitSpotlightMode();
+          renderQuestComplete();
+        } else {
+          enterSpotlightMode();
+        }
       }
 
-      function showQuestFlash() {
-        const flash = document.getElementById("questFlash");
-        if (!flash) return;
-        flash.textContent = "\u2713 Nice one!";
-        flash.classList.add("visible");
-        setTimeout(() => flash.classList.remove("visible"), 1200);
+      // ── Quest: Generate with AI (create-asset) ──
+      function questGenerateWithAI(taskId) {
+        const task = questState?.quest?.tasks?.find(t => t.id === taskId);
+        if (!task) return;
+
+        const prompt = `Help me create: ${task.title}. ${task.instruction || ''}`;
+        const input = document.getElementById('chatInput');
+        if (input) {
+          input.value = prompt;
+          input.style.height = 'auto';
+          input.style.height = input.scrollHeight + 'px';
+          input.focus();
+          const chatSection = document.querySelector('.chat-section');
+          if (chatSection) chatSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        completeQuestTask(taskId);
+      }
+
+      // ── Quest: mark task done but still review remaining emails ──
+      async function markDoneButReviewEmails(taskId) {
+        const task = questState.quest.tasks.find(t => t.id === taskId);
+        if (!task) { completeQuestTask(taskId); return; }
+
+        // Mark complete in background
+        questState.completedIds.add(taskId);
+        if (task.relatedActionItemId) {
+          fetch(`/api/action-items/${task.relatedActionItemId}/complete`, { method: "PATCH" }).catch(() => {});
+        }
+        if (task.relatedFollowUpId) {
+          fetch(`/api/follow-ups/${task.relatedFollowUpId}/toggle`, { method: "PATCH" }).catch(() => {});
+        }
+        updateQuestButton();
+        updateQuestPill();
+
+        // If there are more emails to review, switch to sub-email flow
+        const emailIds = getTaskEmailIds(task);
+        const subIdx = questState.emailSubIndex || 0;
+        if (subIdx < emailIds.length - 1) {
+          questState.emailSubIndex = subIdx + 1;
+          saveQuestState();
+          enterSpotlightMode();
+        } else {
+          // No more emails — advance to next task
+          questState.currentIndex++;
+          questState.emailSubIndex = 0;
+          saveQuestState();
+          setTimeout(() => {
+            const nextTask = getCurrentQuestTask();
+            if (!nextTask) { exitSpotlightMode(); renderQuestComplete(); }
+            else enterSpotlightMode();
+          }, 400);
+        }
+      }
+
+      // ── Quest: advance to next related email ──
+      function questAdvanceEmail() {
+        if (!questState) return;
+        questState.emailSubIndex = (questState.emailSubIndex || 0) + 1;
+        saveQuestState();
+        enterSpotlightMode();
+      }
+
+      // ── Quest: mark current email as read, then advance ──
+      async function questMarkReadAndAdvance() {
+        if (!questState) return;
+        const task = getCurrentQuestTask();
+        if (!task) return;
+        const currentEmailId = getCurrentEmailId(task);
+        if (currentEmailId) {
+          const emailIdx = findEmailIndex(currentEmailId);
+          if (emailIdx >= 0) {
+            await markAsRead(emailIdx);
+          }
+        }
+        // Check if there are more emails
+        const emailIds = getTaskEmailIds(task);
+        const subIdx = questState.emailSubIndex || 0;
+        if (subIdx < emailIds.length - 1) {
+          questAdvanceEmail();
+        } else {
+          completeQuestTask(task.id);
+        }
+      }
+
+      // ── Quest: auto-complete on email send ──
+      function questAutoCompleteForEmail(emailId) {
+        if (!questState) return;
+        const task = getCurrentQuestTask();
+        if (!task) return;
+        const emailIds = getTaskEmailIds(task);
+        if (!emailIds.includes(emailId)) return;
+
+        // If there are more emails after the current one, advance to next
+        const subIdx = questState.emailSubIndex || 0;
+        if (subIdx < emailIds.length - 1) {
+          questAdvanceEmail();
+        } else {
+          completeQuestTask(task.id);
+        }
       }
 
       // ── Quest Complete ──
@@ -3541,22 +3654,25 @@
         const elapsed = Math.round((Date.now() - questState.startTime) / 60000);
         const done = questState.completedIds.size;
 
-        // Save to history
         try {
           await fetch("/api/quest/complete", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              name: q.questName,
-              tasksCompleted: done,
-              totalMinutes: elapsed,
-            }),
+            body: JSON.stringify({ name: q.questName, tasksCompleted: done, totalMinutes: elapsed }),
           });
           await fetchQuestHistory();
         } catch (err) {
           console.error("[quest/complete] ERROR:", err);
         }
 
+        questState = null;
+        saveQuestState();
+        updateQuestButton();
+        document.getElementById('questPill').classList.remove('visible');
+
+        // Show complete overlay
+        const overlay = document.getElementById("questOverlay");
+        overlay.classList.add("visible");
         const main = document.getElementById("questMain");
         main.innerHTML = `
           <div class="quest-complete">
@@ -3577,36 +3693,30 @@
             <button class="quest-complete-btn" onclick="closeQuest()">Close</button>
           </div>
         `;
-
-        // Reset quest state
-        questState = null;
-        updateQuestButton();
       }
 
       function closeQuest() {
         closeQuestOverlay();
-        // Refresh data to reflect completed items
         fetchActionItems();
         fetchFollowUps();
       }
 
       function abandonQuest() {
         questState = null;
+        exitSpotlightMode();
+        saveQuestState();
         updateQuestButton();
-        renderSetupScreen();
-        // Refresh data
+        closeQuestOverlay();
         fetchActionItems();
         fetchFollowUps();
       }
     </script>
 
-    <!-- Quest Mode Overlay -->
+    <!-- Quest: Setup/Peek/Complete overlay -->
     <div class="quest-overlay" id="questOverlay">
       <div class="quest-panel">
         <button class="quest-close" onclick="closeQuestOverlay()">&times;</button>
-        <div class="quest-main" id="questMain">
-          <!-- Setup / Active / Complete screens rendered by JS -->
-        </div>
+        <div class="quest-main" id="questMain"></div>
         <div class="quest-sidebar" id="questSidebar">
           <div class="quest-sidebar-title">Past Quests</div>
           <div class="quest-history" id="questHistory">
@@ -3616,5 +3726,14 @@
         </div>
       </div>
     </div>
+
+    <!-- Quest: Spotlight dim -->
+    <div class="quest-spotlight-dim" id="questSpotlightDim"></div>
+
+    <!-- Quest: Progress pill -->
+    <div class="quest-pill" id="questPill" onclick="questPillClick()"></div>
+
+    <!-- Quest: Tooltip -->
+    <div class="quest-tooltip" id="questTooltip"></div>
   </body>
 </html>
