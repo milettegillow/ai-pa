@@ -745,7 +745,7 @@ app.get('/api/emails', async (_req, res) => {
       filter: 'isRead eq false',
       top: 50,
       orderby: ['receivedDateTime desc'],
-      select: ['id', 'subject', 'from', 'toRecipients', 'ccRecipients', 'receivedDateTime', 'body', 'bodyPreview', 'isRead', 'inferenceClassification'],
+      select: ['id', 'subject', 'from', 'toRecipients', 'ccRecipients', 'receivedDateTime', 'body', 'uniqueBody', 'bodyPreview', 'isRead', 'inferenceClassification'],
     });
 
     // DEBUG: Log raw MCP response
@@ -770,6 +770,7 @@ app.get('/api/emails', async (_req, res) => {
                 subject: msg.subject || '(No subject)',
                 preview: (msg.bodyPreview || '').slice(0, 100),
                 body: msg.body?.content || msg.bodyPreview || '',
+                uniqueBody: msg.uniqueBody?.content || '',
                 bodyType: msg.body?.contentType || 'text',
                 time: msg.receivedDateTime || '',
                 isRead: msg.isRead ?? false,
@@ -807,7 +808,7 @@ app.post('/api/emails/refresh', async (_req, res) => {
       filter: 'isRead eq false',
       top: 50,
       orderby: ['receivedDateTime desc'],
-      select: ['id', 'subject', 'from', 'toRecipients', 'ccRecipients', 'receivedDateTime', 'body', 'bodyPreview', 'isRead', 'inferenceClassification'],
+      select: ['id', 'subject', 'from', 'toRecipients', 'ccRecipients', 'receivedDateTime', 'body', 'uniqueBody', 'bodyPreview', 'isRead', 'inferenceClassification'],
     });
 
     const emails = [];
@@ -826,6 +827,7 @@ app.post('/api/emails/refresh', async (_req, res) => {
                 subject: msg.subject || '(No subject)',
                 preview: (msg.bodyPreview || '').slice(0, 100),
                 body: msg.body?.content || msg.bodyPreview || '',
+                uniqueBody: msg.uniqueBody?.content || '',
                 bodyType: msg.body?.contentType || 'text',
                 time: msg.receivedDateTime || '',
                 isRead: msg.isRead ?? false,

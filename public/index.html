@@ -2514,9 +2514,27 @@
         return { latest: text, previous: null };
       }
 
+      function escAttr(str) {
+        // Encode for use inside HTML attribute (srcdoc) — must encode quotes and ampersands
+        return (str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+      }
+
       function renderEmailBody(email, index) {
-        if (email.bodyType === "html" && email.body) {
-          return `<iframe class="email-body-frame" id="emailFrame${index}" sandbox="allow-same-origin" srcdoc="${esc(email.body)}" onload="resizeFrame(this)"></iframe>`;
+        if (email.bodyType === "html") {
+          // Use uniqueBody (latest message only) if available, fall back to full body
+          const latestHtml = email.uniqueBody || email.body || '';
+          const hasThread = email.uniqueBody && email.body && email.body.length > email.uniqueBody.length + 100;
+
+          let html = `<iframe class="email-body-frame" id="emailFrame${index}" sandbox="allow-same-origin" srcdoc="${escAttr(latestHtml)}" onload="resizeFrame(this)"></iframe>`;
+
+          if (hasThread) {
+            html += `
+              <button class="thread-toggle" onclick="event.stopPropagation(); toggleThread(${index})" id="threadToggle${index}">Show previous messages</button>
+              <div class="thread-previous" id="threadPrevious${index}">
+                <iframe class="email-body-frame" id="emailFrameThread${index}" sandbox="allow-same-origin" srcdoc="${escAttr(email.body)}" onload="resizeFrame(this)"></iframe>
+              </div>`;
+          }
+          return html;
         }
         const text = email.body || email.preview || "(No content available)";
         const thread = splitThread(text);

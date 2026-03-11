@@ -1062,6 +1062,193 @@
       "completed": false,
       "receivedAt": "2026-03-09T17:24:24Z",
       "isIntro": false
+    },
+    {
+      "id": "c86b9f35-59c3-4372-96f9-6cbeccc01f34",
+      "text": "Reply to Kavita Kar acknowledging intro and connect with Nima at WiCS Stanford",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHDf5n_AAA=",
+      "createdAt": "2026-03-11T21:46:10.013Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-06T09:07:40Z",
+      "isIntro": true
+    },
+    {
+      "id": "5abe008d-2394-4e5d-b608-cbb6783cf5b7",
+      "text": "Acknowledge Inditex contract signing process update from Judith Canabal Salazar",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHDf5n8AAA=",
+      "createdAt": "2026-03-11T21:46:10.013Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-06T07:55:34Z",
+      "isIntro": false
+    },
+    {
+      "id": "3c821c14-b1f7-49e2-ab2a-923b7e72b840",
+      "text": "Reply to Jamie Thomas at Berkeley confirming newsletter publication date (March 18 or April 1) for hackathon promo",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHDf5n5AAA=",
+      "createdAt": "2026-03-11T21:46:10.013Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-06T03:03:56Z",
+      "isIntro": false
+    },
+    {
+      "id": "f9a92e5b-e7f9-4478-bdf0-35d7e6fa8e1c",
+      "text": "Reply to Gabby at Aldea VC to continue intro conversation - intro from Isabelle O'Keeffe",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHB0akMAAA=",
+      "createdAt": "2026-03-11T21:46:10.013Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-05T13:38:06Z",
+      "isIntro": true
+    },
+    {
+      "id": "9302842f-0cb7-44e3-a4ea-87c5997f3c2a",
+      "text": "Coordinate with Sibyl Chen at Berkeley on social media/newsletter promo support for hackathon",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHB0aj_AAA=",
+      "createdAt": "2026-03-11T21:46:10.013Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-05T06:30:42Z",
+      "isIntro": false
+    },
+    {
+      "id": "bb3c3ee9-f9ec-4cee-bfc1-3ac759c5e897",
+      "text": "Review Atlassian AP ticket AP-1120464 invoice confirmation from Casey Peña",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHB0aj7AAA=",
+      "createdAt": "2026-03-11T21:46:10.013Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-05T03:01:16Z",
+      "isIntro": false
+    },
+    {
+      "id": "33e6e8d4-d605-4846-acf1-afa4ec959d10",
+      "text": "Follow up with Savitri Tan after meeting - interested in partnership/support",
+      "source": "email",
+      "sourceId": "AQMkADhiNTRjM2I3LTNlMGQtNDQAODctYjM4Zi03M2M1NGIzNzM4OTcARgAAA9blx63wNcFNv2jcok8V25oHAH9S3MY9y8ZNiPQDpNc5_zEAAAIBDAAAAH9S3MY9y8ZNiPQDpNc5_zEAAb-LRwAAAQ==",
+      "createdAt": "2026-03-11T21:46:10.013Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-02T14:49:39Z",
+      "isIntro": false
+    },
+    {
+      "id": "0f703f41-1789-42f6-9b2c-e80cc1183dca",
+      "text": "Share Granola 12-month deal link (granola.so) with TTB cohort members - confirmed by Shre",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAG9hBWtAAA=",
+      "createdAt": "2026-03-11T21:46:10.013Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-02-27T08:47:59Z",
+      "isIntro": false
+    },
+    {
+      "id": "f6e6a5c2-e41d-4880-9e4a-87ce2faeea9e",
+      "text": "Follow up with Eva Mollett at Berkeley on hackathon logistics and Master of Analytics logo usage",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAG9hBV2AAA=",
+      "createdAt": "2026-03-11T21:46:10.013Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-02-25T22:21:26Z",
+      "isIntro": false
+    },
+    {
+      "id": "2b2a2bae-338c-4a84-8966-0545c8fd61a4",
+      "text": "Respond to Aurora Rossi at Bang & Olufsen about photo usage on career portal",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAG9hBUyAAA=",
+      "createdAt": "2026-03-11T21:46:10.013Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-02-25T11:30:21Z",
+      "isIntro": false
+    },
+    {
+      "id": "228b16a7-2671-4c18-a45f-845c9f09b22b",
+      "text": "Respond to Prosthetics Society at Imperial re: Fivium sponsorship coordination for FemHack",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAG9AgtQAAA=",
+      "createdAt": "2026-03-11T21:46:10.013Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-02-24T17:15:06Z",
+      "isIntro": false
+    },
+    {
+      "id": "09b6df5d-a2f2-4d9e-bfb0-a5185ea66180",
+      "text": "Share Granola deal (granola.so) with TTB cohort members - 12 months confirmed by Shreman Shrestha",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAG9AgstAAA=",
+      "createdAt": "2026-03-11T21:46:10.013Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-02-24T11:23:07Z",
+      "isIntro": false
+    },
+    {
+      "id": "8711601a-6996-40db-8ae3-57f1a9d642e6",
+      "text": "Coordinate with Louisa Wells at Fivium on Imperial FemHack sponsorship details",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAG9AgssAAA=",
+      "createdAt": "2026-03-11T21:46:10.013Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-02-24T11:05:13Z",
+      "isIntro": false
+    },
+    {
+      "id": "d32ff956-a5a0-441e-932e-5a70ebac34be",
+      "text": "Coordinate with Fem Tech Society on Fivium sponsorship for Imperial FemHack",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAG9AgsoAAA=",
+      "createdAt": "2026-03-11T21:46:10.013Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-02-24T10:34:02Z",
+      "isIntro": true
+    },
+    {
+      "id": "25bf6705-5d4b-4f23-8303-5f818c1ba451",
+      "text": "Review EWOR Venture Scouts February update and respond to Felix Schmitt about in-person event",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAGxy-BfAAA=",
+      "createdAt": "2026-03-11T21:46:10.013Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-02-08T08:45:50Z",
+      "isIntro": false
+    },
+    {
+      "id": "e32d4ffe-67ae-4442-bfeb-73f1244bc73b",
+      "text": "Reply to Frances Spooner at Marriott Harrison to schedule intro call - intro from Jess McCarten at SIE Ventures",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAGvrfA3AAA=",
+      "createdAt": "2026-03-11T21:46:10.013Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-02-04T15:15:00Z",
+      "isIntro": true
+    },
+    {
+      "id": "827678c1-3b72-408e-bf05-e98418efee62",
+      "text": "Reply to Brittany Gibbons about Yosemite catch-up plans",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAGubZPnAAA=",
+      "createdAt": "2026-03-11T21:46:10.013Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-02-02T08:33:56Z",
+      "isIntro": false
     }
   ],
   "archive": {}
