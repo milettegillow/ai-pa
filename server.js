@@ -66,6 +66,22 @@ function saveFollowUps(data) {
   writeFileSync(followUpsPath, JSON.stringify(data, null, 2) + '\n');
 }
 
+// Quests config
+const questsPath = join(__dirname, 'quests.json');
+
+function loadQuests() {
+  if (!existsSync(questsPath)) return { quests: [] };
+  try {
+    return JSON.parse(readFileSync(questsPath, 'utf-8'));
+  } catch {
+    return { quests: [] };
+  }
+}
+
+function saveQuests(data) {
+  writeFileSync(questsPath, JSON.stringify(data, null, 2) + '\n');
+}
+
 const DEFAULT_WRITING_RULES = [
   'Always use UK English',
   'Never use em dashes (\u2014)',
@@ -685,6 +701,45 @@ app.get('/api/emails', async (_req, res) => {
       return res.json({ emails: cached });
     }
 
+    // DEBUG: Step 1 — unfiltered call to see raw count
+    console.log('[DEBUG /api/emails] Step 1: calling list-mail-folder-messages with NO filters...');
+    const debugRaw = await callTool('list-mail-folder-messages', {
+      mailFolderId: 'Inbox',
+    });
+    if (debugRaw?.content?.[0]?.text) {
+      try {
+        const rawData = JSON.parse(debugRaw.content[0].text);
+        const rawItems = rawData.value || (Array.isArray(rawData) ? rawData : []);
+        console.log(`[DEBUG /api/emails] Unfiltered: ${rawItems.length} messages returned`);
+        if (rawItems.length > 0) {
+          console.log(`[DEBUG /api/emails] First message: subject="${rawItems[0].subject}", isRead=${rawItems[0].isRead}, inferenceClassification=${rawItems[0].inferenceClassification}`);
+        }
+      } catch (e) {
+        console.log(`[DEBUG /api/emails] Raw parse failed: ${e.message}`);
+        console.log(`[DEBUG /api/emails] Raw text (first 500): ${debugRaw.content[0].text.slice(0, 500)}`);
+      }
+    } else {
+      console.log('[DEBUG /api/emails] No content in raw response:', JSON.stringify(debugRaw).slice(0, 500));
+    }
+
+    // DEBUG: Step 2 — with isRead filter only
+    console.log('[DEBUG /api/emails] Step 2: calling with filter "isRead eq false" only...');
+    const debugFiltered = await callTool('list-mail-folder-messages', {
+      mailFolderId: 'Inbox',
+      filter: 'isRead eq false',
+    });
+    if (debugFiltered?.content?.[0]?.text) {
+      try {
+        const filtData = JSON.parse(debugFiltered.content[0].text);
+        const filtItems = filtData.value || (Array.isArray(filtData) ? filtData : []);
+        console.log(`[DEBUG /api/emails] isRead=false filter: ${filtItems.length} messages`);
+      } catch (e) {
+        console.log(`[DEBUG /api/emails] Filtered parse failed: ${e.message}`);
+      }
+    }
+
+    // DEBUG: Step 3 — full call (original)
+    console.log('[DEBUG /api/emails] Step 3: full call with all params...');
     const result = await callTool('list-mail-folder-messages', {
       mailFolderId: 'Inbox',
       filter: 'isRead eq false',
@@ -692,6 +747,9 @@ app.get('/api/emails', async (_req, res) => {
       orderby: ['receivedDateTime desc'],
       select: ['id', 'subject', 'from', 'toRecipients', 'ccRecipients', 'receivedDateTime', 'body', 'bodyPreview', 'isRead', 'inferenceClassification'],
     });
+
+    // DEBUG: Log raw MCP response
+    console.log('[DEBUG /api/emails] Full call raw response:', JSON.stringify(result).slice(0, 1000));
 
     // Parse MCP result — content is an array of content blocks
     const emails = [];
@@ -701,8 +759,10 @@ app.get('/api/emails', async (_req, res) => {
           try {
             const data = JSON.parse(block.text);
             const items = data.value || (Array.isArray(data) ? data : []);
+            console.log(`[DEBUG /api/emails] Parsed ${items.length} items from full call`);
+            let skippedOther = 0;
             for (const msg of items) {
-              if (msg.inferenceClassification === 'other') continue;
+              if (msg.inferenceClassification === 'other') { skippedOther++; continue; }
               emails.push({
                 id: msg.id || '',
                 sender: msg.from?.emailAddress?.name || msg.from?.emailAddress?.address || 'Unknown',
@@ -717,6 +777,7 @@ app.get('/api/emails', async (_req, res) => {
                 cc: (msg.ccRecipients || []).map(r => ({ name: r.emailAddress?.name || '', email: r.emailAddress?.address || '' })),
               });
             }
+            console.log(`[DEBUG /api/emails] Skipped ${skippedOther} with inferenceClassification=other, kept ${emails.length}`);
           } catch (e) {
             console.error(`[/api/emails] Parse error: ${e.message}`);
           }
@@ -807,7 +868,32 @@ app.get('/api/calendar', async (_req, res) => {
     endOfDay.setHours(23, 59, 59, 999);
     const endDateTime = endOfDay.toISOString();
 
+    // DEBUG: Step 1 — wide date range (7 days back, 7 days forward)
+    const debugStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const debugEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    console.log(`[DEBUG /api/calendar] Step 1: wide range ${debugStart} to ${debugEnd}`);
+    const debugCal = await callTool('get-calendar-view', {
+      startDateTime: debugStart,
+      endDateTime: debugEnd,
+    });
+    if (debugCal?.content?.[0]?.text) {
+      try {
+        const rawCal = JSON.parse(debugCal.content[0].text);
+        const rawItems = rawCal.value || (Array.isArray(rawCal) ? rawCal : []);
+        console.log(`[DEBUG /api/calendar] Wide range: ${rawItems.length} events`);
+        for (const e of rawItems.slice(0, 5)) {
+          console.log(`[DEBUG /api/calendar]   - "${e.subject}" start=${e.start?.dateTime} end=${e.end?.dateTime}`);
+        }
+      } catch (e) {
+        console.log(`[DEBUG /api/calendar] Wide parse failed: ${e.message}`);
+        console.log(`[DEBUG /api/calendar] Raw text (first 500): ${debugCal.content[0].text.slice(0, 500)}`);
+      }
+    } else {
+      console.log('[DEBUG /api/calendar] No content in wide response:', JSON.stringify(debugCal).slice(0, 500));
+    }
 
+    // DEBUG: Step 2 — today only (original params)
+    console.log(`[DEBUG /api/calendar] Step 2: today only ${startDateTime} to ${endDateTime}`);
     const result = await callTool('get-calendar-view', {
       startDateTime,
       endDateTime,
@@ -816,6 +902,9 @@ app.get('/api/calendar', async (_req, res) => {
       select: ['id', 'subject', 'start', 'end', 'location', 'attendees'],
     });
 
+    // DEBUG: Log raw response
+    console.log('[DEBUG /api/calendar] Today raw response:', JSON.stringify(result).slice(0, 1000));
+
     const events = [];
     if (result?.content) {
       for (const block of result.content) {
@@ -823,6 +912,7 @@ app.get('/api/calendar', async (_req, res) => {
           try {
             const data = JSON.parse(block.text);
             const items = data.value || (Array.isArray(data) ? data : []);
+            console.log(`[DEBUG /api/calendar] Parsed ${items.length} events from today call`);
             for (const evt of items) {
               events.push({
                 id: evt.id || '',
@@ -1084,6 +1174,178 @@ app.post('/api/action-items/archive', (_req, res) => {
 app.get('/api/action-items/archive', (_req, res) => {
   const data = loadActionItems();
   res.json({ archive: data.archive || {} });
+});
+
+// ── Quest Mode endpoints ────────────────────────────────────────────────────
+
+app.get('/api/quests', (_req, res) => {
+  const data = loadQuests();
+  res.json(data);
+});
+
+app.post('/api/quest/generate', async (req, res) => {
+  try {
+    const { availableMinutes } = req.body;
+
+    // Gather all data sources
+    const actionData = loadActionItems();
+    const fuData = loadFollowUps();
+    const toolkit = loadToolkit();
+
+    let emailList = getCached('emails');
+    if (!emailList) {
+      try {
+        const emailRes = await fetch(`http://localhost:${PORT}/api/emails`);
+        const emailData = await emailRes.json();
+        emailList = emailData.emails || [];
+      } catch { emailList = []; }
+    }
+
+    let eventList = getCached('calendar');
+    if (!eventList) {
+      try {
+        const calRes = await fetch(`http://localhost:${PORT}/api/calendar`);
+        const calData = await calRes.json();
+        eventList = calData.events || [];
+      } catch { eventList = []; }
+    }
+
+    const incompleteActions = (actionData.items || []).filter(i => !i.completed);
+    const incompleteFollowUps = (fuData.followUps || []).filter(f => !f.completed);
+    const incompleteBlockers = (fuData.blockers || []).filter(b => !b.completed);
+    const toolkitLinks = (toolkit.links || []).map(l => `- ${l.label}: ${l.url}`).join('\n');
+
+    const actionsSummary = incompleteActions.map(i => {
+      const age = i.receivedAt ? Math.round((Date.now() - new Date(i.receivedAt).getTime()) / (1000*60*60)) + 'h ago' : 'unknown age';
+      return `- [ACTION id:${i.id}] ${i.text} (${age}, isIntro: ${!!i.isIntro}, sourceId: ${i.sourceId || 'none'})`;
+    }).join('\n');
+
+    const followUpsSummary = incompleteFollowUps.map(f => {
+      const text = f.text || f.name || '';
+      return `- [FOLLOWUP id:${f.id}] ${text} (type: ${f.type || 'unknown'}, email: ${f.recipientEmail || 'none'}, due: ${f.dueDate || 'none'})`;
+    }).join('\n');
+
+    const blockersSummary = incompleteBlockers.map(b =>
+      `- [BLOCKER id:${b.id}] ${b.name}: ${b.task}`
+    ).join('\n');
+
+    const emailsSummary = emailList.slice(0, 20).map(e =>
+      `- [EMAIL id:${e.id}] From: ${e.sender} (${e.senderEmail}) | Subject: ${e.subject} | Preview: ${(e.preview || '').slice(0, 80)}`
+    ).join('\n');
+
+    const calSummary = eventList.map(e =>
+      `- ${e.title} (${new Date(e.start).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}–${new Date(e.end).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })})`
+    ).join('\n');
+
+    const timeConstraint = availableMinutes
+      ? `Milette has ${availableMinutes} minutes. Fit as many tasks as possible within this time, preferring to keep blocker+dependent pairs together. Cut the list at the time limit.`
+      : `Milette has unlimited time. Include ALL tasks.`;
+
+    const prompt = `Generate a quest plan for Milette. ${timeConstraint}
+
+Action items:
+${actionsSummary || '(none)'}
+
+Follow-ups:
+${followUpsSummary || '(none)'}
+
+Blockers:
+${blockersSummary || '(none)'}
+
+Unread emails:
+${emailsSummary || '(none)'}
+
+Today's calendar:
+${calSummary || '(none)'}
+
+Available toolkit links:
+${toolkitLinks || '(none)'}
+
+Time estimates:
+- Email reply with Calendly link or short response: 1-2 min
+- Email reply requiring a drafted response: 3-5 min
+- Intro reply: 2-3 min
+- Creating a simple one-pager: 20 min
+- Creating a proposal doc: 30 min
+- Creating a full deck: 45-60 min
+- External tasks (form, contract): 5-10 min
+- Follow-up emails: 2-3 min
+
+Ordering rules:
+1. Sort by urgency tier (red > orange > yellow > none)
+2. Within each urgency tier: tasks with no blockers first, sorted by estimatedMinutes ascending
+3. Tasks with blockers after — insert the blocker as a task immediately before its dependent task
+
+Urgency rules: items received >48h ago = red, >24h = orange, >12h = yellow, else none. Follow-ups with dueDate past = red, within 24h = orange, within 72h = yellow.
+
+Return ONLY valid JSON:
+{
+  "questName": "Short evocative name (2-4 words, e.g. 'The Sunday Clear', 'Morning Sprint', 'The Inbox Blitz')",
+  "totalEstimatedMinutes": number,
+  "tasks": [
+    {
+      "id": "use the EXACT id from the source item (action/followup/blocker) where possible, or generate a new UUID",
+      "title": "Short action title",
+      "instruction": "One sentence telling Milette exactly what to do",
+      "type": "email-reply | create-asset | external-task | follow-up",
+      "estimatedMinutes": number,
+      "urgency": "red | orange | yellow | none",
+      "hasBlocker": false,
+      "isBlockerFor": "dependent task id or null",
+      "relatedEmailId": "email id or null",
+      "relatedActionItemId": "action item id or null",
+      "relatedFollowUpId": "follow-up id or null",
+      "suggestedAction": "what the app should do e.g. 'open email + pre-draft response' or 'mark done when ready'"
+    }
+  ]
+}`;
+
+    let rawResult = '';
+    for await (const message of query({ prompt, options: {
+      systemPrompt: `You are Milette's personal assistant building a gamified task quest. Analyse her pending work, estimate times, sort by urgency, and return a structured quest plan. Return ONLY valid JSON, no markdown, no explanation. Be specific in instructions — use real names and context from the data.`,
+      tools: [],
+      permissionMode: 'bypassPermissions',
+      allowDangerouslySkipPermissions: true,
+      maxTurns: 1,
+    }})) {
+      if ('result' in message) rawResult = message.result;
+    }
+
+    let quest;
+    try {
+      const jsonMatch = rawResult.match(/\{[\s\S]*\}/);
+      if (jsonMatch) quest = JSON.parse(jsonMatch[0]);
+      else throw new Error('No JSON object found');
+    } catch (e) {
+      console.error('[quest/generate] Failed to parse:', e.message);
+      return res.status(500).json({ error: 'Failed to parse quest from Claude' });
+    }
+
+    // Ensure each task has an id
+    for (const task of quest.tasks || []) {
+      if (!task.id) task.id = randomUUID();
+    }
+
+    console.log(`[quest/generate] "${quest.questName}" — ${(quest.tasks || []).length} tasks, ~${quest.totalEstimatedMinutes} min`);
+    res.json(quest);
+  } catch (err) {
+    console.error('[quest/generate] ERROR:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/quest/complete', (req, res) => {
+  const { name, tasksCompleted, totalMinutes } = req.body;
+  const data = loadQuests();
+  data.quests.push({
+    id: randomUUID(),
+    name: name || 'Quest',
+    completedAt: new Date().toISOString(),
+    tasksCompleted: tasksCompleted || 0,
+    totalMinutes: totalMinutes || 0,
+  });
+  saveQuests(data);
+  res.json({ ok: true });
 });
 
 // Generate blocker suggestions from action items

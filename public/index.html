@@ -95,6 +95,35 @@
         border-color: var(--muted);
       }
 
+      .btn-quest {
+        font-family: "Outfit", sans-serif;
+        font-size: 0.55rem;
+        font-weight: 500;
+        color: var(--accent);
+        background: transparent;
+        border: 1px solid var(--accent);
+        border-radius: 8px;
+        padding: 4px 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-quest:hover {
+        background: rgba(124, 158, 138, 0.1);
+      }
+
+      .btn-quest.quest-active {
+        background: #8b2020;
+        border-color: #c04040;
+        color: #fff;
+        animation: quest-pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes quest-pulse {
+        0%, 100% { box-shadow: 0 0 4px rgba(192, 64, 64, 0.3); }
+        50% { box-shadow: 0 0 12px rgba(192, 64, 64, 0.6); }
+      }
+
       /* ── Section Labels ──────────────────────────── */
 
       .section-label {
@@ -115,17 +144,23 @@
       }
 
       .agenda-fixed {
-        flex-shrink: 0;
+        flex: 0 0 33%;
+        min-height: 0;
+        overflow-y: auto;
       }
 
       .action-items-section {
-        flex-shrink: 0;
+        flex: 0 0 50%;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
         padding: 16px 16px 8px;
         border-bottom: 1px solid var(--border);
+        overflow: hidden;
       }
 
       .action-items-scroll {
-        max-height: 300px;
+        flex: 1;
         min-height: 0;
         overflow-y: auto;
       }
@@ -513,7 +548,7 @@
       }
 
       .chat-section {
-        flex: 1;
+        flex: 0 0 67%;
         min-height: 0;
         display: flex;
         flex-direction: column;
@@ -522,7 +557,7 @@
       }
 
       .sidebar-section {
-        flex: 1 1 0;
+        flex: 0 0 25%;
         min-height: 0;
         display: flex;
         flex-direction: column;
@@ -1217,6 +1252,467 @@
         padding: 6px 0;
       }
 
+      /* ── Quest Mode Overlay ──────────────────────── */
+
+      .quest-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        background: rgba(10, 10, 8, 0.85);
+        backdrop-filter: blur(8px);
+        align-items: center;
+        justify-content: center;
+      }
+
+      .quest-overlay.visible {
+        display: flex;
+      }
+
+      .quest-panel {
+        position: relative;
+        width: 90vw;
+        max-width: 1100px;
+        height: 80vh;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        display: flex;
+        overflow: hidden;
+      }
+
+      .quest-close {
+        position: absolute;
+        top: 12px;
+        right: 16px;
+        background: none;
+        border: none;
+        color: var(--text-faded);
+        font-size: 24px;
+        cursor: pointer;
+        z-index: 2;
+        line-height: 1;
+      }
+
+      .quest-close:hover { color: var(--text); }
+
+      .quest-main {
+        flex: 7;
+        padding: 32px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .quest-sidebar {
+        flex: 3;
+        border-left: 1px solid var(--border);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg);
+      }
+
+      .quest-sidebar-title {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 16px;
+      }
+
+      .quest-history {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .quest-history-item {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 10px 12px;
+      }
+
+      .quest-history-name {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text);
+      }
+
+      .quest-history-meta {
+        font-size: 11px;
+        color: var(--text-faded);
+        margin-top: 2px;
+      }
+
+      .quest-sidebar-footer {
+        flex-shrink: 0;
+        font-size: 11px;
+        color: var(--text-faded);
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+        margin-top: 12px;
+      }
+
+      /* Setup screen */
+
+      .quest-setup {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 24px;
+      }
+
+      .quest-setup-title {
+        font-size: 20px;
+        font-weight: 500;
+        color: var(--text);
+      }
+
+      .quest-setup-subtitle {
+        font-size: 14px;
+        color: var(--text-muted);
+        margin-top: -12px;
+      }
+
+      .quest-time-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+      }
+
+      .quest-time-btn {
+        font-family: "Outfit", sans-serif;
+        font-size: 13px;
+        font-weight: 400;
+        padding: 10px 20px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: transparent;
+        color: var(--text);
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .quest-time-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      .quest-time-btn.selected {
+        border-color: var(--accent);
+        background: rgba(124, 158, 138, 0.12);
+        color: var(--accent);
+      }
+
+      .quest-generate-btn {
+        font-family: "Outfit", sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        padding: 12px 32px;
+        border: none;
+        border-radius: 10px;
+        background: var(--accent);
+        color: var(--bg);
+        cursor: pointer;
+        transition: opacity 0.15s;
+      }
+
+      .quest-generate-btn:hover { opacity: 0.85; }
+      .quest-generate-btn:disabled { opacity: 0.4; cursor: default; }
+
+      /* Active quest */
+
+      .quest-header {
+        display: flex;
+        align-items: baseline;
+        gap: 16px;
+        margin-bottom: 20px;
+        flex-shrink: 0;
+      }
+
+      .quest-header-name {
+        font-size: 20px;
+        font-weight: 500;
+        color: var(--accent);
+      }
+
+      .quest-header-meta {
+        font-size: 13px;
+        color: var(--text-faded);
+      }
+
+      .quest-checklist {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-bottom: 20px;
+        flex-shrink: 0;
+      }
+
+      .quest-task-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        transition: background 0.15s;
+      }
+
+      .quest-task-row.current {
+        background: rgba(124, 158, 138, 0.1);
+        border-left: 3px solid var(--accent);
+      }
+
+      .quest-task-row.completed {
+        opacity: 0.4;
+      }
+
+      .quest-task-row.completed .quest-task-title {
+        text-decoration: line-through;
+      }
+
+      .quest-task-row.future {
+        opacity: 0.6;
+      }
+
+      .quest-task-indicator {
+        width: 18px;
+        font-size: 12px;
+        text-align: center;
+        flex-shrink: 0;
+      }
+
+      .quest-task-title {
+        flex: 1;
+      }
+
+      .quest-task-badge {
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 6px;
+        flex-shrink: 0;
+      }
+
+      .quest-task-badge.urgency-red { background: rgba(224, 82, 82, 0.15); color: #e05252; }
+      .quest-task-badge.urgency-orange { background: rgba(224, 160, 80, 0.15); color: #e0a050; }
+      .quest-task-badge.urgency-yellow { background: rgba(212, 196, 85, 0.15); color: #d4c455; }
+      .quest-task-badge.blocker { background: rgba(212, 196, 85, 0.15); color: #d4c455; }
+
+      /* Task detail card */
+
+      .quest-detail {
+        flex: 1;
+        min-height: 0;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        overflow-y: auto;
+      }
+
+      .quest-detail-title {
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--text);
+      }
+
+      .quest-detail-instruction {
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+
+      .quest-detail-time {
+        font-size: 12px;
+        color: var(--text-faded);
+      }
+
+      .quest-guided-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 0;
+      }
+
+      .quest-email-preview {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 12px;
+        font-size: 12px;
+      }
+
+      .quest-email-preview-sender {
+        font-weight: 500;
+        color: var(--text);
+        margin-bottom: 2px;
+      }
+
+      .quest-email-preview-subject {
+        color: var(--text-muted);
+        margin-bottom: 4px;
+      }
+
+      .quest-email-preview-body {
+        color: var(--text-faded);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .quest-draft-area textarea {
+        width: 100%;
+        min-height: 80px;
+        max-height: 150px;
+        resize: vertical;
+        font-family: "Outfit", sans-serif;
+        font-size: 13px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--text);
+        padding: 10px;
+        line-height: 1.5;
+      }
+
+      .quest-draft-area textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+
+      .quest-actions {
+        display: flex;
+        gap: 10px;
+        flex-shrink: 0;
+        margin-top: auto;
+        padding-top: 8px;
+      }
+
+      .quest-btn-done {
+        font-family: "Outfit", sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        padding: 8px 20px;
+        border: none;
+        border-radius: 8px;
+        background: var(--accent);
+        color: var(--bg);
+        cursor: pointer;
+        transition: opacity 0.15s;
+      }
+
+      .quest-btn-done:hover { opacity: 0.85; }
+
+      .quest-btn-skip {
+        font-family: "Outfit", sans-serif;
+        font-size: 13px;
+        font-weight: 400;
+        padding: 8px 20px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: transparent;
+        color: var(--text-faded);
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .quest-btn-skip:hover { color: var(--text); border-color: var(--text-faded); }
+
+      .quest-btn-action {
+        font-family: "Outfit", sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        padding: 8px 16px;
+        border: 1px solid var(--accent);
+        border-radius: 8px;
+        background: transparent;
+        color: var(--accent);
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .quest-btn-action:hover { background: rgba(124, 158, 138, 0.1); }
+      .quest-btn-action:disabled { opacity: 0.4; cursor: default; }
+
+      .quest-flash {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--accent);
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+
+      .quest-flash.visible { opacity: 1; }
+
+      .quest-abandon {
+        font-size: 11px;
+        color: var(--text-faded);
+        text-decoration: underline;
+        cursor: pointer;
+        background: none;
+        border: none;
+        font-family: "Outfit", sans-serif;
+        margin-top: 12px;
+        align-self: flex-start;
+      }
+
+      .quest-abandon:hover { color: var(--text-muted); }
+
+      /* Complete screen */
+
+      .quest-complete {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+      }
+
+      .quest-seal {
+        width: 140px;
+        height: 140px;
+      }
+
+      .quest-complete-title {
+        font-size: 22px;
+        font-weight: 500;
+        color: var(--text);
+      }
+
+      .quest-complete-meta {
+        font-size: 14px;
+        color: var(--text-muted);
+      }
+
+      .quest-complete-btn {
+        font-family: "Outfit", sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        padding: 10px 28px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: transparent;
+        color: var(--text);
+        cursor: pointer;
+        margin-top: 8px;
+      }
+
+      .quest-complete-btn:hover { border-color: var(--text-faded); }
+
       ::-webkit-scrollbar {
         width: 4px;
       }
@@ -1238,6 +1734,7 @@
       <div class="header-greeting" id="greeting">Good morning, Milette</div>
       <div style="display:flex;align-items:center;gap:16px">
         <div class="header-date" id="headerDate"></div>
+        <button class="btn-quest" id="btnQuest" onclick="openQuestMode()">&#9889; Quest Mode</button>
         <a href="/archive.html" class="toolkit-link">Archive</a>
         <a href="/toolkit.html" class="toolkit-link">Toolkit</a>
       </div>
@@ -2600,6 +3097,524 @@
           month: "short",
         });
       }
+
+      // ── Quest Mode ──────────────────────────────────
+
+      let questState = null; // { quest, currentIndex, completedIds, startTime }
+      let questHistory = [];
+      let questSelectedMinutes = null;
+
+      // Fetch quest history on init
+      fetchQuestHistory();
+
+      async function fetchQuestHistory() {
+        try {
+          const res = await fetch("/api/quests");
+          const data = await res.json();
+          questHistory = data.quests || [];
+          renderQuestSidebar();
+        } catch (err) {
+          console.error("[fetchQuestHistory] ERROR:", err);
+        }
+      }
+
+      function renderQuestSidebar() {
+        const el = document.getElementById("questHistory");
+        const footer = document.getElementById("questSidebarFooter");
+        if (questHistory.length === 0) {
+          el.innerHTML = '<div class="section-empty">No quests yet</div>';
+          footer.textContent = '';
+          return;
+        }
+        el.innerHTML = questHistory.slice().reverse().map(q => {
+          const d = new Date(q.completedAt);
+          const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+          return `
+            <div class="quest-history-item">
+              <div class="quest-history-name">${esc(q.name)}</div>
+              <div class="quest-history-meta">${dateStr} &middot; ${q.tasksCompleted} tasks &middot; ${q.totalMinutes} min</div>
+            </div>
+          `;
+        }).join('');
+        footer.textContent = `\u26A1 ${questHistory.length} quest${questHistory.length !== 1 ? 's' : ''} completed`;
+      }
+
+      function openQuestMode() {
+        const overlay = document.getElementById("questOverlay");
+        overlay.classList.add("visible");
+        if (questState) {
+          renderActiveQuest();
+        } else {
+          renderSetupScreen();
+        }
+      }
+
+      function closeQuestOverlay() {
+        document.getElementById("questOverlay").classList.remove("visible");
+      }
+
+      function updateQuestButton() {
+        const btn = document.getElementById("btnQuest");
+        if (questState) {
+          const done = questState.completedIds.size;
+          const total = questState.quest.tasks.length;
+          const remaining = total - done;
+          btn.className = 'btn-quest quest-active';
+          btn.innerHTML = `\u26A1 Quest Active &middot; ${done} done, ${remaining} to go`;
+        } else {
+          btn.className = 'btn-quest';
+          btn.innerHTML = '\u26A1 Quest Mode';
+        }
+      }
+
+      // ── Setup Screen ──
+
+      function renderSetupScreen() {
+        questSelectedMinutes = null;
+        const main = document.getElementById("questMain");
+        main.innerHTML = `
+          <div class="quest-setup">
+            <div class="quest-setup-title">\u26A1 Quest Mode</div>
+            <div class="quest-setup-subtitle">How long do you have?</div>
+            <div class="quest-time-options">
+              <button class="quest-time-btn" onclick="selectQuestTime(15, this)">15 minutes</button>
+              <button class="quest-time-btn" onclick="selectQuestTime(30, this)">30 minutes</button>
+              <button class="quest-time-btn" onclick="selectQuestTime(60, this)">1 hour</button>
+              <button class="quest-time-btn" onclick="selectQuestTime(120, this)">2 hours</button>
+              <button class="quest-time-btn" onclick="selectQuestTime(null, this)">I'll go until it's done</button>
+            </div>
+            <button class="quest-generate-btn" id="btnQuestGenerate" onclick="generateQuest()" disabled>Generate Quest</button>
+          </div>
+        `;
+      }
+
+      function selectQuestTime(minutes, btn) {
+        questSelectedMinutes = minutes;
+        document.querySelectorAll('.quest-time-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        document.getElementById('btnQuestGenerate').disabled = false;
+      }
+
+      async function generateQuest() {
+        const btn = document.getElementById("btnQuestGenerate");
+        btn.disabled = true;
+        btn.textContent = "Generating...";
+
+        try {
+          const res = await fetch("/api/quest/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ availableMinutes: questSelectedMinutes }),
+          });
+          const data = await res.json();
+          if (data.error) throw new Error(data.error);
+
+          questState = {
+            quest: data,
+            currentIndex: 0,
+            completedIds: new Set(),
+            skippedIds: new Set(),
+            startTime: Date.now(),
+          };
+          updateQuestButton();
+          renderActiveQuest();
+        } catch (err) {
+          console.error("[generateQuest] ERROR:", err);
+          btn.textContent = "Generate Quest";
+          btn.disabled = false;
+          const main = document.getElementById("questMain");
+          const errDiv = document.createElement('div');
+          errDiv.style.cssText = 'color: #e05252; font-size: 13px; text-align: center; margin-top: 12px;';
+          errDiv.textContent = 'Error: ' + err.message;
+          main.querySelector('.quest-setup').appendChild(errDiv);
+        }
+      }
+
+      // ── Active Quest ──
+
+      function renderActiveQuest() {
+        const main = document.getElementById("questMain");
+        const q = questState.quest;
+        const tasks = q.tasks;
+        const done = questState.completedIds.size;
+
+        // Find next uncompleted, unskipped task
+        let activeIdx = questState.currentIndex;
+        while (activeIdx < tasks.length &&
+               (questState.completedIds.has(tasks[activeIdx].id) || questState.skippedIds.has(tasks[activeIdx].id))) {
+          activeIdx++;
+        }
+        questState.currentIndex = activeIdx;
+
+        // Check if all done
+        if (activeIdx >= tasks.length) {
+          renderQuestComplete();
+          return;
+        }
+
+        const current = tasks[activeIdx];
+
+        // Build checklist
+        const checklistHtml = tasks.map((t, i) => {
+          const isCompleted = questState.completedIds.has(t.id);
+          const isSkipped = questState.skippedIds.has(t.id);
+          const isCurrent = i === activeIdx;
+          let cls = 'quest-task-row';
+          if (isCompleted || isSkipped) cls += ' completed';
+          else if (isCurrent) cls += ' current';
+          else cls += ' future';
+
+          const indicator = isCompleted ? '\u2713' : isSkipped ? '\u2013' : isCurrent ? '\u25B6' : '\u2022';
+          const badges = [];
+          if (t.urgency && t.urgency !== 'none') badges.push(`<span class="quest-task-badge urgency-${t.urgency}">${t.urgency}</span>`);
+          if (t.hasBlocker || t.isBlockerFor) badges.push('<span class="quest-task-badge blocker">\u26A0</span>');
+
+          return `<div class="${cls}">
+            <span class="quest-task-indicator">${indicator}</span>
+            <span class="quest-task-title">${esc(t.title)}</span>
+            ${badges.join('')}
+            <span class="quest-detail-time">~${t.estimatedMinutes}m</span>
+          </div>`;
+        }).join('');
+
+        // Build detail card
+        const guidedHtml = buildGuidedArea(current);
+
+        main.innerHTML = `
+          <div class="quest-header">
+            <div class="quest-header-name">\u26A1 ${esc(q.questName)}</div>
+            <div class="quest-header-meta">~${q.totalEstimatedMinutes} min &middot; ${done} of ${tasks.length} done</div>
+          </div>
+          <div class="quest-checklist">${checklistHtml}</div>
+          <div class="quest-detail">
+            <div class="quest-detail-title">${esc(current.title)}</div>
+            <div class="quest-detail-instruction">${esc(current.instruction)}</div>
+            <div class="quest-detail-time">~${current.estimatedMinutes} min</div>
+            <div class="quest-guided-area" id="questGuidedArea">${guidedHtml}</div>
+            <div class="quest-actions">
+              <button class="quest-btn-done" onclick="completeQuestTask('${current.id}')">\u2713 Done</button>
+              <button class="quest-btn-skip" onclick="skipQuestTask('${current.id}')">\u2192 Skip</button>
+              <span class="quest-flash" id="questFlash"></span>
+            </div>
+          </div>
+          <button class="quest-abandon" onclick="abandonQuest()">Abandon Quest</button>
+        `;
+      }
+
+      function buildGuidedArea(task) {
+        if (task.type === 'email-reply') {
+          // Find the related email
+          const email = task.relatedEmailId ? emails.find(e => e.id === task.relatedEmailId) : null;
+          let html = '';
+          if (email) {
+            html += `
+              <div class="quest-email-preview">
+                <div class="quest-email-preview-sender">${esc(email.sender)}</div>
+                <div class="quest-email-preview-subject">${esc(email.subject)}</div>
+                <div class="quest-email-preview-body">${esc((email.preview || '').slice(0, 120))}</div>
+              </div>
+            `;
+            html += `<button class="quest-btn-action" onclick="questDraftReply('${task.id}', '${email.id}')">Draft Reply \u2192</button>`;
+          } else {
+            html += `<div class="quest-detail-instruction" style="color:var(--text-faded)">Related email not found in inbox. You may have already handled it, or draft manually via the PA chat.</div>`;
+          }
+          html += `<div class="quest-draft-area" id="questDraftArea"></div>`;
+          return html;
+        }
+
+        if (task.type === 'follow-up') {
+          let html = `<button class="quest-btn-action" onclick="questDraftFollowUp('${task.id}')">Draft Follow-up \u2192</button>`;
+          html += `<div class="quest-draft-area" id="questDraftArea"></div>`;
+          return html;
+        }
+
+        if (task.type === 'create-asset') {
+          return `<div style="font-size:13px;color:var(--text-muted);padding:8px 0;">Complete this outside the app, then mark done here.</div>`;
+        }
+
+        if (task.type === 'external-task') {
+          return `<div style="font-size:13px;color:var(--text-muted);padding:8px 0;">Complete this outside the app, then mark done here.</div>`;
+        }
+
+        return '';
+      }
+
+      // ── Guided Actions ──
+
+      async function questDraftReply(taskId, emailId) {
+        const area = document.getElementById("questDraftArea");
+        const btn = event.target;
+        if (!area) return;
+        btn.disabled = true;
+        btn.textContent = "Drafting...";
+        area.innerHTML = '<div style="font-size:12px;color:var(--text-faded);padding:8px 0;">Analysing and drafting...</div>';
+
+        try {
+          const email = emails.find(e => e.id === emailId);
+          if (!email) throw new Error("Email not found");
+
+          // Call analyse then draft
+          const analyseRes = await fetch(`/api/emails/${encodeURIComponent(emailId)}/analyse`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sender: email.sender,
+              senderEmail: email.senderEmail,
+              subject: email.subject,
+              body: email.body || email.preview,
+            }),
+          });
+          const analyseData = await analyseRes.json();
+
+          // Draft with first option or no instruction
+          const instruction = (analyseData.options && analyseData.options[0]) ? analyseData.options[0] : null;
+          const draftRes = await fetch(`/api/emails/${encodeURIComponent(emailId)}/draft-reply`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sender: email.sender,
+              senderEmail: email.senderEmail,
+              subject: email.subject,
+              preview: email.body || email.preview,
+              receivedAt: email.time || null,
+              instruction,
+            }),
+          });
+          const draftData = await draftRes.json();
+          if (draftData.error) throw new Error(draftData.error);
+
+          area.innerHTML = `
+            <textarea id="questDraftTextarea" style="width:100%;min-height:80px;max-height:150px;resize:vertical;font-family:'Outfit',sans-serif;font-size:13px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:10px;line-height:1.5;">${esc(draftData.draft)}</textarea>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button class="quest-btn-action" onclick="questSendReply('${taskId}', '${emailId}')">Send \u2192</button>
+              <button class="quest-btn-skip" onclick="questDraftReply('${taskId}', '${emailId}')" style="font-size:12px;padding:6px 12px;">Regenerate</button>
+            </div>
+          `;
+          btn.textContent = "Draft Reply \u2192";
+          btn.disabled = false;
+        } catch (err) {
+          area.innerHTML = `<div style="font-size:12px;color:#e05252;padding:8px 0;">Error: ${esc(err.message)}</div>`;
+          btn.textContent = "Draft Reply \u2192";
+          btn.disabled = false;
+        }
+      }
+
+      async function questSendReply(taskId, emailId) {
+        const textarea = document.getElementById("questDraftTextarea");
+        const area = document.getElementById("questDraftArea");
+        if (!textarea || !area) return;
+
+        const draftText = textarea.value.trim();
+        if (!draftText) return;
+
+        const sendBtn = event.target;
+        sendBtn.disabled = true;
+        sendBtn.textContent = "Sending...";
+
+        try {
+          const res = await fetch(`/api/emails/${encodeURIComponent(emailId)}/send`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ draftText }),
+          });
+          const data = await res.json();
+          if (data.error) throw new Error(data.error);
+
+          area.innerHTML = '<div style="font-size:13px;color:var(--accent);padding:8px 0;">Sent! Click Done to continue.</div>';
+        } catch (err) {
+          sendBtn.disabled = false;
+          sendBtn.textContent = "Send \u2192";
+          area.insertAdjacentHTML('beforeend', `<div style="font-size:12px;color:#e05252;margin-top:4px;">Send failed: ${esc(err.message)}</div>`);
+        }
+      }
+
+      async function questDraftFollowUp(taskId) {
+        const area = document.getElementById("questDraftArea");
+        const btn = event.target;
+        if (!area) return;
+        btn.disabled = true;
+        btn.textContent = "Drafting...";
+        area.innerHTML = '<div style="font-size:12px;color:var(--text-faded);padding:8px 0;">Drafting follow-up...</div>';
+
+        try {
+          const task = questState.quest.tasks.find(t => t.id === taskId);
+          const followUpId = task?.relatedFollowUpId;
+
+          if (followUpId) {
+            const res = await fetch(`/api/follow-ups/${followUpId}/draft`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({}),
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+
+            area.innerHTML = `
+              <textarea id="questDraftTextarea" style="width:100%;min-height:80px;max-height:150px;resize:vertical;font-family:'Outfit',sans-serif;font-size:13px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:10px;line-height:1.5;">${esc(data.draft)}</textarea>
+              <div style="display:flex;gap:8px;margin-top:8px;">
+                <button class="quest-btn-action" onclick="questSendFollowUp('${taskId}', '${followUpId}')">Send \u2192</button>
+              </div>
+            `;
+          } else {
+            area.innerHTML = '<div style="font-size:12px;color:var(--text-faded);padding:8px 0;">No linked follow-up found. Use the PA chat to draft manually, then mark done.</div>';
+          }
+          btn.textContent = "Draft Follow-up \u2192";
+          btn.disabled = false;
+        } catch (err) {
+          area.innerHTML = `<div style="font-size:12px;color:#e05252;padding:8px 0;">Error: ${esc(err.message)}</div>`;
+          btn.textContent = "Draft Follow-up \u2192";
+          btn.disabled = false;
+        }
+      }
+
+      async function questSendFollowUp(taskId, followUpId) {
+        const textarea = document.getElementById("questDraftTextarea");
+        const area = document.getElementById("questDraftArea");
+        if (!textarea || !area) return;
+
+        const draftText = textarea.value.trim();
+        if (!draftText) return;
+
+        const sendBtn = event.target;
+        sendBtn.disabled = true;
+        sendBtn.textContent = "Sending...";
+
+        try {
+          const res = await fetch(`/api/follow-ups/${followUpId}/send`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ draftText }),
+          });
+          const data = await res.json();
+          if (data.error) throw new Error(data.error);
+
+          area.innerHTML = '<div style="font-size:13px;color:var(--accent);padding:8px 0;">Sent! Click Done to continue.</div>';
+        } catch (err) {
+          sendBtn.disabled = false;
+          sendBtn.textContent = "Send \u2192";
+          area.insertAdjacentHTML('beforeend', `<div style="font-size:12px;color:#e05252;margin-top:4px;">Send failed: ${esc(err.message)}</div>`);
+        }
+      }
+
+      // ── Task Completion ──
+
+      async function completeQuestTask(taskId) {
+        questState.completedIds.add(taskId);
+
+        // Mark related items complete in background
+        const task = questState.quest.tasks.find(t => t.id === taskId);
+        if (task?.relatedActionItemId) {
+          fetch(`/api/action-items/${task.relatedActionItemId}/complete`, { method: "PATCH" }).catch(() => {});
+        }
+        if (task?.relatedFollowUpId) {
+          fetch(`/api/follow-ups/${task.relatedFollowUpId}/toggle`, { method: "PATCH" }).catch(() => {});
+        }
+
+        // Show flash
+        showQuestFlash();
+        updateQuestButton();
+
+        // Advance
+        questState.currentIndex++;
+        setTimeout(() => renderActiveQuest(), 600);
+      }
+
+      function skipQuestTask(taskId) {
+        questState.skippedIds.add(taskId);
+        updateQuestButton();
+        questState.currentIndex++;
+        renderActiveQuest();
+      }
+
+      function showQuestFlash() {
+        const flash = document.getElementById("questFlash");
+        if (!flash) return;
+        flash.textContent = "\u2713 Nice one!";
+        flash.classList.add("visible");
+        setTimeout(() => flash.classList.remove("visible"), 1200);
+      }
+
+      // ── Quest Complete ──
+
+      async function renderQuestComplete() {
+        const q = questState.quest;
+        const elapsed = Math.round((Date.now() - questState.startTime) / 60000);
+        const done = questState.completedIds.size;
+
+        // Save to history
+        try {
+          await fetch("/api/quest/complete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: q.questName,
+              tasksCompleted: done,
+              totalMinutes: elapsed,
+            }),
+          });
+          await fetchQuestHistory();
+        } catch (err) {
+          console.error("[quest/complete] ERROR:", err);
+        }
+
+        const main = document.getElementById("questMain");
+        main.innerHTML = `
+          <div class="quest-complete">
+            <svg class="quest-seal" viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="sealGrad" cx="50%" cy="45%" r="50%">
+                  <stop offset="0%" stop-color="#9b3030"/>
+                  <stop offset="100%" stop-color="#5a1a1a"/>
+                </radialGradient>
+              </defs>
+              <circle cx="70" cy="70" r="65" fill="url(#sealGrad)" stroke="#7a2222" stroke-width="2"/>
+              <circle cx="70" cy="70" r="52" fill="none" stroke="#c0606060" stroke-width="1"/>
+              <text x="70" y="62" text-anchor="middle" fill="#e8d0c0" font-family="Outfit" font-size="11" font-weight="600" letter-spacing="0.1em">QUEST</text>
+              <text x="70" y="82" text-anchor="middle" fill="#e8d0c0" font-family="Outfit" font-size="11" font-weight="600" letter-spacing="0.1em">COMPLETE</text>
+            </svg>
+            <div class="quest-complete-title">Quest Complete</div>
+            <div class="quest-complete-meta">${esc(q.questName)} &middot; ${done} task${done !== 1 ? 's' : ''} &middot; ${elapsed} min</div>
+            <button class="quest-complete-btn" onclick="closeQuest()">Close</button>
+          </div>
+        `;
+
+        // Reset quest state
+        questState = null;
+        updateQuestButton();
+      }
+
+      function closeQuest() {
+        closeQuestOverlay();
+        // Refresh data to reflect completed items
+        fetchActionItems();
+        fetchFollowUps();
+      }
+
+      function abandonQuest() {
+        questState = null;
+        updateQuestButton();
+        renderSetupScreen();
+        // Refresh data
+        fetchActionItems();
+        fetchFollowUps();
+      }
     </script>
+
+    <!-- Quest Mode Overlay -->
+    <div class="quest-overlay" id="questOverlay">
+      <div class="quest-panel">
+        <button class="quest-close" onclick="closeQuestOverlay()">&times;</button>
+        <div class="quest-main" id="questMain">
+          <!-- Setup / Active / Complete screens rendered by JS -->
+        </div>
+        <div class="quest-sidebar" id="questSidebar">
+          <div class="quest-sidebar-title">Past Quests</div>
+          <div class="quest-history" id="questHistory">
+            <div class="section-empty">No quests yet</div>
+          </div>
+          <div class="quest-sidebar-footer" id="questSidebarFooter"></div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
