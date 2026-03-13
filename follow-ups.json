@@ -38,8 +38,8 @@
       "name": "need to finalise the luma pages for all these events AND have an overview of all the upcoming events (some info in text messages, some on email etc)",
       "dueDate": null,
       "task": "Reply to Georgina at Goodwin Law, Confirm Women of Impact Attendance, Review & Share April 11th Hackathon Luma",
-      "completed": false,
-      "completedAt": null,
+      "completed": true,
+      "completedAt": "2026-03-12T18:42:34.635Z",
       "createdAt": "2026-03-11T13:31:26.525Z"
     },
     {
@@ -47,8 +47,8 @@
       "name": "I don't have an overview of everything, so can't decide whether or not I can go into London for this tomorrow. I need an overview of all my tasks / to-dos for the week to check if I have capacity. I need to basically do everything else first before doing this",
       "dueDate": null,
       "task": "Confirm Women of Impact attendance, Reply to Stef Hutka re: London meetup",
-      "completed": false,
-      "completedAt": null,
+      "completed": true,
+      "completedAt": "2026-03-12T18:42:40.847Z",
       "createdAt": "2026-03-11T14:40:53.724Z"
     },
     {
@@ -56,9 +56,18 @@
       "name": "finalise Luma page for this event",
       "dueDate": null,
       "task": "Confirm Newsletter Dates with Jamie",
-      "completed": false,
-      "completedAt": null,
+      "completed": true,
+      "completedAt": "2026-03-12T18:42:46.508Z",
       "createdAt": "2026-03-11T19:07:36.547Z"
+    },
+    {
+      "id": "faeecf9f-2132-4199-a6c2-d43b757da32f",
+      "name": "finalise luma pages for SF events (specifically: Berkeley hackathon)",
+      "dueDate": null,
+      "task": "Add Hackathon to Keith's Document, Reply to Sibyl Chen re: Hackathon Promo, Confirm Hackathon Date with Justine",
+      "completed": true,
+      "completedAt": "2026-03-12T18:42:50.095Z",
+      "createdAt": "2026-03-12T12:25:03.206Z"
     }
   ]
 }

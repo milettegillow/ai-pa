@@ -630,6 +630,12 @@ app.post('/api/emails/:id/draft-reply', async (req, res) => {
     const toolkit = loadToolkit();
     let fullPrompt = draftReplyPrompt;
 
+    // Replace CALENDLY_URL placeholder with actual Calendly link from toolkit
+    const calendlyLink = (toolkit.links || []).find(l => l.url && l.url.includes('calendly.com'));
+    if (calendlyLink) {
+      fullPrompt = fullPrompt.replace(/CALENDLY_URL/g, calendlyLink.url);
+    }
+
     if (toolkit.blurb) {
       fullPrompt += `\n\n## About The Tech Bros\n\n${toolkit.blurb}`;
     }
@@ -650,7 +656,7 @@ app.post('/api/emails/:id/draft-reply', async (req, res) => {
     if (receivedAt) {
       const ageHours = (Date.now() - new Date(receivedAt).getTime()) / (1000 * 60 * 60);
       if (ageHours >= 336) {
-        apologyPrefix = '\n\nIMPORTANT: This email is over 2 weeks old. Start the reply with "Apologies for the delay here — " before the main content.';
+        apologyPrefix = '\n\nIMPORTANT: This email is over 2 weeks old. Start the reply with "Apologies for the delay here - " before the main content.';
       }
     }
 
@@ -682,6 +688,12 @@ Body: ${preview || '(no preview available)'}`;
 
     // Post-process: convert raw URLs to markdown-style links with friendly labels
     draft = formatDraftLinks(draft);
+
+    // Safety net: strip em dashes that Claude may still produce
+    draft = draft.replace(/\s*—\s*/g, ' - ');
+
+    // Safety net: fix "Milette's Calendly" link text to "here"
+    draft = draft.replace(/\[Milette'?s?\s*Calendly\]/gi, '[here]');
 
     res.json({ draft });
   } catch (err) {

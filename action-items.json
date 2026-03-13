@@ -1,16 +1,6 @@
 {
   "items": [
     {
-      "id": "47e35ea9-2d62-4a43-be4f-770e1393542a",
-      "text": "Reply to Milette's own test email (miletteriis@live.com) to schedule a call this week",
-      "source": "email",
-      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHFECBiAAA=",
-      "createdAt": "2026-03-08T11:40:18.880Z",
-      "completedAt": "2026-03-11T15:31:18.539Z",
-      "completed": true,
-      "receivedAt": "2026-03-08T09:34:58Z"
-    },
-    {
       "id": "6b0d8df1-1fb6-411e-a166-9ad3a1dee11d",
       "text": "Update supplier information on Atlassian's Coupa portal as requested",
       "source": "email",
@@ -19,16 +9,6 @@
       "completedAt": null,
       "completed": false,
       "receivedAt": "2026-03-05T03:27:29Z"
-    },
-    {
-      "id": "677ccce9-9cbd-45da-8989-4d68dbe99867",
-      "text": "Check in with Brittany Gibbons (bmg890@gmail.com) about her personal situation and reschedule catch-up if needed",
-      "source": "email",
-      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHEKEyOAAA=",
-      "createdAt": "2026-03-08T11:40:18.880Z",
-      "completedAt": "2026-03-11T18:47:34.927Z",
-      "completed": true,
-      "receivedAt": "2026-03-06T22:58:31Z"
     },
     {
       "id": "37920b7b-4586-47d0-a740-d4e816610bba",
@@ -89,16 +69,6 @@
       "completedAt": null,
       "completed": false,
       "receivedAt": "2026-03-06T03:03:56Z"
-    },
-    {
-      "id": "4b84ce09-2893-40e3-9b2b-4bf6dd2b6558",
-      "text": "Follow up with Laura Hassner at Berkeley re: colleague outreach for hackathon",
-      "source": "email",
-      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHDf5n4AAA=",
-      "createdAt": "2026-03-08T11:40:18.880Z",
-      "completedAt": "2026-03-11T19:08:05.720Z",
-      "completed": true,
-      "receivedAt": "2026-03-06T00:08:09Z"
     },
     {
       "id": "8217c422-fe82-4d29-bcf1-1c0dcfb574f4",
@@ -200,26 +170,6 @@
       "completed": false
     },
     {
-      "id": "5f239008-bb0a-4952-9ca1-5003524dc7b0",
-      "text": "Respond to Luca Mezossy-Dona at Ionate Energy about International Women's Day help",
-      "source": "email",
-      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHB0ai4AAA=",
-      "createdAt": "2026-03-08T11:40:18.880Z",
-      "completedAt": null,
-      "completed": false,
-      "receivedAt": "2026-03-03T14:26:18Z"
-    },
-    {
-      "id": "0d23b43a-894d-4112-b4fe-ef519c9f4d86",
-      "text": "Follow up with Savitri Tan after meeting",
-      "source": "email",
-      "sourceId": "AQMkADhiNTRjM2I3LTNlMGQtNDQAODctYjM4Zi03M2M1NGIzNzM4OTcARgAAA9blx63wNcFNv2jcok8V25oHAH9S3MY9y8ZNiPQDpNc5_zEAAAIBDAAAAH9S3MY9y8ZNiPQDpNc5_zEAAb-LRwAAAQ==",
-      "createdAt": "2026-03-08T11:40:18.880Z",
-      "completedAt": null,
-      "completed": false,
-      "receivedAt": "2026-03-02T14:49:39Z"
-    },
-    {
       "id": "859b48fe-b7db-4401-a1c9-74899f5192aa",
       "text": "Process additional invoice and receipts confirmation with Natalia at Inditex",
       "source": "email",
@@ -228,16 +178,6 @@
       "completedAt": null,
       "completed": false,
       "receivedAt": "2026-03-02T09:54:50Z"
-    },
-    {
-      "id": "c51814c6-5932-46b2-9995-9828b54cfb2b",
-      "text": "Respond to Marc Baiza at Vercel acknowledging conversation shift",
-      "source": "email",
-      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAG-y0btAAA=",
-      "createdAt": "2026-03-08T11:40:18.880Z",
-      "completedAt": null,
-      "completed": false,
-      "receivedAt": "2026-03-01T19:05:29Z"
     },
     {
       "id": "72899e65-1314-4b84-8bc8-a990bd7435eb",
@@ -339,16 +279,6 @@
       "receivedAt": "2026-02-21T09:09:43Z"
     },
     {
-      "id": "e10e96d8-46b8-4ebe-bf78-8488e8bf0f1f",
-      "text": "Prepare for IC FemHack / TTB x IC FemHack event happening today (12:00-17:00)",
-      "source": "email",
-      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAG9AgsoAAA=",
-      "createdAt": "2026-03-08T11:40:18.880Z",
-      "completedAt": "2026-03-08T11:44:22.484Z",
-      "completed": true,
-      "receivedAt": "2026-02-24T10:34:02Z"
-    },
-    {
       "id": "39922023-bbf5-4ed6-a1df-4041594dc74b",
       "text": "Review and edit TTB x IC FemHack Feedback form shared by Sedinam Simpson",
       "source": "email",
@@ -368,17 +298,6 @@
       "completedAt": null,
       "completed": false,
       "receivedAt": "2026-03-10T16:30:24Z",
-      "isIntro": false
-    },
-    {
-      "id": "8bc4c64a-587d-4ab4-95d8-942afc2ea718",
-      "text": "Review event proposal from Natasha Lalwani for April Event Collab and provide feedback",
-      "source": "email",
-      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHFo52eAAA=",
-      "createdAt": "2026-03-11T11:06:24.985Z",
-      "completedAt": "2026-03-11T18:35:58.870Z",
-      "completed": true,
-      "receivedAt": "2026-03-10T15:50:38Z",
       "isIntro": false
     },
     {
@@ -404,17 +323,6 @@
       "isIntro": false
     },
     {
-      "id": "5980a2a6-2b8d-44c9-baf2-158295f14d34",
-      "text": "Note party event details from Lovkush Agarwal - 7pm on March 17th (one week away)",
-      "source": "email",
-      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHFo52aAAA=",
-      "createdAt": "2026-03-11T11:06:24.985Z",
-      "completedAt": "2026-03-11T13:36:52.682Z",
-      "completed": true,
-      "receivedAt": "2026-03-10T10:26:53Z",
-      "isIntro": false
-    },
-    {
       "id": "fe565dfb-2c4c-40ae-8a95-63c31890b0e3",
       "text": "Complete Atlassian registration on Coupa Supplier Portal (action required from do_not_reply@supplier.coupahost.com)",
       "source": "email",
@@ -434,28 +342,6 @@
       "completedAt": null,
       "completed": false,
       "receivedAt": "2026-03-09T17:18:23Z",
-      "isIntro": false
-    },
-    {
-      "id": "470fee2e-452e-43f5-9e93-2ce394d93176",
-      "text": "Sign SPONSOR AGREEMENT for The Tech Bros Ltd with Inditex (document from Fernando Mouriño via Docuten)",
-      "source": "email",
-      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHFo52FAAA=",
-      "createdAt": "2026-03-11T11:06:24.985Z",
-      "completedAt": "2026-03-11T12:31:08.906Z",
-      "completed": true,
-      "receivedAt": "2026-03-09T12:53:56Z",
-      "isIntro": false
-    },
-    {
-      "id": "a4f317ff-39e8-4794-b17b-213dc659c44d",
-      "text": "Sign CCGG document for The Tech Bros Ltd with Inditex (document from Fernando Mouriño via Docuten)",
-      "source": "email",
-      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHFo52DAAA=",
-      "createdAt": "2026-03-11T11:06:24.985Z",
-      "completedAt": "2026-03-11T12:32:30.630Z",
-      "completed": true,
-      "receivedAt": "2026-03-09T12:51:14Z",
       "isIntro": false
     },
     {
@@ -492,17 +378,6 @@
       "isIntro": false
     },
     {
-      "id": "cffa5116-769a-49ea-84e5-0129c0d2eb6b",
-      "text": "RSVP to IFF Women's AI Breakfast at London AI HUB from Meric Sevgi Eren",
-      "source": "email",
-      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHFRT3XAAA=",
-      "createdAt": "2026-03-11T11:06:24.985Z",
-      "completedAt": "2026-03-11T18:47:02.579Z",
-      "completed": true,
-      "receivedAt": "2026-03-08T17:07:40Z",
-      "isIntro": false
-    },
-    {
       "id": "da587567-d01d-4265-8027-d6928e11489f",
       "text": "Attend EWOR Grand Pitch on Zoom",
       "source": "email",
@@ -511,17 +386,6 @@
       "completedAt": null,
       "completed": false,
       "receivedAt": null,
-      "isIntro": false
-    },
-    {
-      "id": "60d43160-ddd5-42af-a689-e3642a5aa968",
-      "text": "Review Luma event page for 'if user == woman: ship( )' on April 11th and share to promote",
-      "source": "email",
-      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHHCVGWAAA=",
-      "createdAt": "2026-03-11T11:20:41.749Z",
-      "completedAt": "2026-03-11T14:40:07.309Z",
-      "completed": true,
-      "receivedAt": "2026-03-11T11:19:54Z",
       "isIntro": false
     },
     {
@@ -544,17 +408,6 @@
       "completedAt": null,
       "completed": false,
       "receivedAt": "2026-03-10T15:50:38Z",
-      "isIntro": false
-    },
-    {
-      "id": "615678c3-2fc2-40b1-8a4e-1045a77917d0",
-      "text": "Decide on reaching out to AI tools (e.g., Cursor, Replit) for demos at April Event Collab workshop - respond to Bidisa Mukherjee",
-      "source": "email",
-      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHFo52dAAA=",
-      "createdAt": "2026-03-11T11:20:41.749Z",
-      "completedAt": "2026-03-11T13:35:17.969Z",
-      "completed": true,
-      "receivedAt": "2026-03-10T15:43:30Z",
       "isIntro": false
     },
     {
@@ -589,28 +442,6 @@
       "completed": false,
       "receivedAt": "2026-03-06T11:08:47Z",
       "isIntro": true
-    },
-    {
-      "id": "71942fce-1b78-4127-ad20-96886cf9e4b0",
-      "text": "Review luma event update for The Tech Bros: Pitch Night on April 16th",
-      "source": "email",
-      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHHCVGZAAA=",
-      "createdAt": "2026-03-11T11:32:19.809Z",
-      "completedAt": "2026-03-11T14:42:27.522Z",
-      "completed": true,
-      "receivedAt": "2026-03-11T11:31:34Z",
-      "isIntro": false
-    },
-    {
-      "id": "da99b522-817c-440e-b3fd-0dd4f7e24347",
-      "text": "Share and promote luma event 'The First 90 Days of a Startup' on April 8th",
-      "source": "email",
-      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHHCVGXAAA=",
-      "createdAt": "2026-03-11T11:32:19.809Z",
-      "completedAt": "2026-03-11T14:40:09.672Z",
-      "completed": true,
-      "receivedAt": "2026-03-11T11:28:22Z",
-      "isIntro": false
     },
     {
       "id": "7962d38d-921a-4bad-9832-0ad687a7cdfe",
@@ -698,17 +529,6 @@
       "completedAt": null,
       "completed": false,
       "receivedAt": "2026-03-10T16:30:24Z",
-      "isIntro": false
-    },
-    {
-      "id": "2fa6358d-e99d-4a84-b81f-46ba4ffb6e85",
-      "text": "Review Investor Pathways Stage 1 outcome email and determine next steps for Stage 2",
-      "source": "email",
-      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHHCVGfAAA=",
-      "createdAt": "2026-03-11T15:14:33.648Z",
-      "completedAt": "2026-03-11T16:04:49.627Z",
-      "completed": true,
-      "receivedAt": "2026-03-11T14:48:53Z",
       "isIntro": false
     },
     {
@@ -830,17 +650,6 @@
       "completedAt": null,
       "completed": false,
       "receivedAt": "2026-03-08T20:21:55Z",
-      "isIntro": false
-    },
-    {
-      "id": "e537c2fe-5362-40f1-babc-9d48feae7e97",
-      "text": "Process reimbursement for Sedinam Simpson - TTB x IC FemHack catering receipts totaling £107",
-      "source": "email",
-      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHHCVGjAAA=",
-      "createdAt": "2026-03-11T16:05:15.202Z",
-      "completedAt": "2026-03-11T16:20:01.600Z",
-      "completed": true,
-      "receivedAt": "2026-03-11T15:39:27Z",
       "isIntro": false
     },
     {
@@ -1229,17 +1038,6 @@
       "isIntro": false
     },
     {
-      "id": "e32d4ffe-67ae-4442-bfeb-73f1244bc73b",
-      "text": "Reply to Frances Spooner at Marriott Harrison to schedule intro call - intro from Jess McCarten at SIE Ventures",
-      "source": "email",
-      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAGvrfA3AAA=",
-      "createdAt": "2026-03-11T21:46:10.013Z",
-      "completedAt": null,
-      "completed": false,
-      "receivedAt": "2026-02-04T15:15:00Z",
-      "isIntro": true
-    },
-    {
       "id": "827678c1-3b72-408e-bf05-e98418efee62",
       "text": "Reply to Brittany Gibbons about Yosemite catch-up plans",
       "source": "email",
@@ -1249,7 +1047,500 @@
       "completed": false,
       "receivedAt": "2026-02-02T08:33:56Z",
       "isIntro": false
+    },
+    {
+      "id": "88a7d3f1-32cd-4f29-8f46-59c056142bb9",
+      "text": "Attend Women of Impact Launch event today (10:15-14:15)",
+      "source": "email",
+      "sourceId": "",
+      "createdAt": "2026-03-12T11:35:19.694Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": null,
+      "isIntro": false
+    },
+    {
+      "id": "dda697dc-f3cc-4b9e-a251-2673d6084d9a",
+      "text": "Prepare for 30 minutes Intro Meeting at 15:30",
+      "source": "email",
+      "sourceId": "",
+      "createdAt": "2026-03-12T11:35:19.694Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": null,
+      "isIntro": false
+    },
+    {
+      "id": "57a5d9b3-18c2-4f6a-b609-ce7e6eb9e72c",
+      "text": "Prepare for meeting with Nick Sopuch at 16:00",
+      "source": "email",
+      "sourceId": "",
+      "createdAt": "2026-03-12T11:35:19.694Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": null,
+      "isIntro": false
+    },
+    {
+      "id": "7e9f478c-1613-400a-9338-9f879b94f577",
+      "text": "Prepare for meeting with Mark Charkin at 16:30",
+      "source": "email",
+      "sourceId": "",
+      "createdAt": "2026-03-12T11:35:19.694Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": null,
+      "isIntro": false
+    },
+    {
+      "id": "4d99f83f-5e1d-4d0c-8148-1339fafc6f7b",
+      "text": "Reply to Kirsten Connell at Octopus Ventures about the company she mentioned with term sheet",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHHxlMlAAA=",
+      "createdAt": "2026-03-12T12:24:54.684Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-12T12:10:59Z",
+      "isIntro": false
+    },
+    {
+      "id": "33e91978-7a10-4c7e-9952-47861a0cd0bb",
+      "text": "Note registration confirmed for Oxford Angels event with Chris Adelsbach OBE on angel investing in AI era",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHHxlMkAAA=",
+      "createdAt": "2026-03-12T12:24:54.684Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-12T12:08:17Z",
+      "isIntro": false
+    },
+    {
+      "id": "c244bd38-c0c3-4603-8dab-17ada60c89ae",
+      "text": "Review EWOR Venture Scouts February update from Felix Schmitt about in-person event planning",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAGxy-BfAAA=",
+      "createdAt": "2026-03-12T12:24:54.684Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-02-08T08:45:50Z",
+      "isIntro": false
+    },
+    {
+      "id": "7e700c0c-686e-4090-ab62-33ad545e3c57",
+      "text": "Review fee estimate from Hannah Frost at Goodwin Law for volunteer contracts",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHHxlMqAAA=",
+      "createdAt": "2026-03-12T12:57:21.306Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-12T12:53:36Z",
+      "isIntro": false
+    },
+    {
+      "id": "71eabd5e-f267-494d-9951-7f585800a980",
+      "text": "Reply to Kirsten Connell at Octopus Ventures about the company with term sheet she mentioned",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHHxlMlAAA=",
+      "createdAt": "2026-03-12T12:57:21.306Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-12T12:10:59Z",
+      "isIntro": false
+    },
+    {
+      "id": "78f2b46f-1d11-4048-b273-84c8f9112027",
+      "text": "Prepare for TechBros x Baker and McKenzie meeting at 13:00",
+      "source": "email",
+      "sourceId": "",
+      "createdAt": "2026-03-12T12:57:21.306Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": null,
+      "isIntro": false
+    },
+    {
+      "id": "b04454e6-2fe5-45ef-8471-0f749f5ca1ee",
+      "text": "Reply to Luca Mezossy-Dona at Ionate Energy - decide whether to do a call or have him send ideas for International Women's Day support",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHIC56pAAA=",
+      "createdAt": "2026-03-12T18:36:17.420Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-12T18:02:39Z",
+      "isIntro": false
+    },
+    {
+      "id": "bddf698f-3af4-4b41-bf02-18547a2a55c9",
+      "text": "Send LP deck feedback to Kirsten Connell at Octopus Ventures as requested",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHHxlMxAAA=",
+      "createdAt": "2026-03-12T18:36:17.420Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-12T15:29:55Z",
+      "isIntro": false
+    },
+    {
+      "id": "ab381b26-764c-47b7-a399-5cebc4a7ea73",
+      "text": "Review Maria Rotilu's comments on LP deck and arrange catch-up at Open Seed VC",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHHxlMtAAA=",
+      "createdAt": "2026-03-12T18:36:17.420Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-12T13:22:01Z",
+      "isIntro": false
+    },
+    {
+      "id": "30400043-220b-41ab-8586-9d24b63bdb24",
+      "text": "Reply to Luca Mezossy-Dona at Ionate Energy - decide whether to schedule a call or ask him to send ideas for International Women's Day support",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHIC56pAAA=",
+      "createdAt": "2026-03-12T18:39:03.181Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-12T18:02:39Z",
+      "isIntro": false
+    },
+    {
+      "id": "277c7d5b-36bc-4594-a233-38a73f3b4f48",
+      "text": "Send LP deck feedback to Kirsten Connell at Octopus Ventures as she confirmed she'd like to receive it",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHHxlMxAAA=",
+      "createdAt": "2026-03-12T18:39:03.181Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-12T15:29:55Z",
+      "isIntro": false
+    },
+    {
+      "id": "9f80b185-01da-4d79-a91b-3f8a5296520d",
+      "text": "Review Maria Rotilu's comments on LP deck and arrange catch-up at Open Seed VC event",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHHxlMtAAA=",
+      "createdAt": "2026-03-12T18:39:03.181Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-12T13:22:01Z",
+      "isIntro": false
+    },
+    {
+      "id": "b246fea3-a940-4c02-a17f-5f177a0a4413",
+      "text": "Reply to Marc Baiza at Vercel acknowledging the shift in conversation",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAG-y0btAAA=",
+      "createdAt": "2026-03-12T18:39:03.181Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-01T19:05:29Z",
+      "isIntro": false
+    },
+    {
+      "id": "574fe568-d304-4ecd-a92e-5913e547e4af",
+      "text": "Reply to Luca Mezossy-Dona at Ionate Energy - decide whether to schedule a call or request he send ideas for International Women's Day support",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHIC56pAAA=",
+      "createdAt": "2026-03-12T18:43:45.412Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-12T18:02:39Z",
+      "isIntro": false
+    },
+    {
+      "id": "c91ce200-b5b7-4f63-98f3-7f2828d0afe5",
+      "text": "Send LP deck feedback to Kirsten Connell at Octopus Ventures as confirmed",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHHxlMxAAA=",
+      "createdAt": "2026-03-12T18:43:45.412Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-12T15:29:55Z",
+      "isIntro": false
+    },
+    {
+      "id": "62b751f8-8c60-4639-b869-78890951b644",
+      "text": "Reply to Stef Hutka at Sendfull to schedule meeting while she and Ross are in London March 13-18",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHFRT3aAAA=",
+      "createdAt": "2026-03-12T18:43:45.412Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-08T20:21:55Z",
+      "isIntro": false
+    },
+    {
+      "id": "3a5dcb93-74cc-4c44-9b25-eddb3c12267a",
+      "text": "Confirm newsletter publication date (March 18 or April 1) with Jamie Thomas at Berkeley for hackathon promo",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHDf5n5AAA=",
+      "createdAt": "2026-03-12T18:43:45.412Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-06T03:03:56Z",
+      "isIntro": false
+    },
+    {
+      "id": "f75f4c2f-216d-4946-bffb-f13448ec4084",
+      "text": "Reply to Marc Baiza at Vercel acknowledging the conversation shift",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAG-y0btAAA=",
+      "createdAt": "2026-03-12T18:43:45.412Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-01T19:05:29Z",
+      "isIntro": false
+    },
+    {
+      "id": "0c3e6ca7-c9f7-44b6-9721-38c87fcca3c2",
+      "text": "Reply to Anisha Solanki at ARIA following Tuesday meeting about TTB newsletter/community engagement",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAG9hBU-AAA=",
+      "createdAt": "2026-03-12T18:43:45.412Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-02-25T13:16:41Z",
+      "isIntro": false
+    },
+    {
+      "id": "555aeb1d-606c-4e60-ba4c-33a09da6d897",
+      "text": "Send landscape version of promo image to Jamie Thomas at Berkeley for hackathon newsletter",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHIC56xAAA=",
+      "createdAt": "2026-03-13T10:44:11.046Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-12T23:36:29Z",
+      "isIntro": false
+    },
+    {
+      "id": "b27db814-deeb-4a22-909d-d5fccb756678",
+      "text": "Reply to Luca Mezossy-Dona at Ionate Energy - decide whether to schedule a call or have him send ideas",
+      "source": "email",
+      "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHIC56pAAA=",
+      "createdAt": "2026-03-13T10:44:11.046Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": "2026-03-12T18:02:39Z",
+      "isIntro": false
+    },
+    {
+      "id": "73446a0a-aa73-4411-aefa-85920c9fc877",
+      "text": "Attend passport appointment",
+      "source": "email",
+      "sourceId": "",
+      "createdAt": "2026-03-13T10:44:11.046Z",
+      "completedAt": null,
+      "completed": false,
+      "receivedAt": null,
+      "isIntro": false
     }
   ],
-  "archive": {}
+  "archive": {
+    "2026-03-11": [
+      {
+        "id": "47e35ea9-2d62-4a43-be4f-770e1393542a",
+        "text": "Reply to Milette's own test email (miletteriis@live.com) to schedule a call this week",
+        "source": "email",
+        "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHFECBiAAA=",
+        "createdAt": "2026-03-08T11:40:18.880Z",
+        "completedAt": "2026-03-11T15:31:18.539Z",
+        "completed": true,
+        "receivedAt": "2026-03-08T09:34:58Z"
+      },
+      {
+        "id": "677ccce9-9cbd-45da-8989-4d68dbe99867",
+        "text": "Check in with Brittany Gibbons (bmg890@gmail.com) about her personal situation and reschedule catch-up if needed",
+        "source": "email",
+        "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHEKEyOAAA=",
+        "createdAt": "2026-03-08T11:40:18.880Z",
+        "completedAt": "2026-03-11T18:47:34.927Z",
+        "completed": true,
+        "receivedAt": "2026-03-06T22:58:31Z"
+      },
+      {
+        "id": "4b84ce09-2893-40e3-9b2b-4bf6dd2b6558",
+        "text": "Follow up with Laura Hassner at Berkeley re: colleague outreach for hackathon",
+        "source": "email",
+        "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHDf5n4AAA=",
+        "createdAt": "2026-03-08T11:40:18.880Z",
+        "completedAt": "2026-03-11T19:08:05.720Z",
+        "completed": true,
+        "receivedAt": "2026-03-06T00:08:09Z"
+      },
+      {
+        "id": "e10e96d8-46b8-4ebe-bf78-8488e8bf0f1f",
+        "text": "Prepare for IC FemHack / TTB x IC FemHack event happening today (12:00-17:00)",
+        "source": "email",
+        "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAG9AgsoAAA=",
+        "createdAt": "2026-03-08T11:40:18.880Z",
+        "completedAt": "2026-03-08T11:44:22.484Z",
+        "completed": true,
+        "receivedAt": "2026-02-24T10:34:02Z"
+      },
+      {
+        "id": "8bc4c64a-587d-4ab4-95d8-942afc2ea718",
+        "text": "Review event proposal from Natasha Lalwani for April Event Collab and provide feedback",
+        "source": "email",
+        "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHFo52eAAA=",
+        "createdAt": "2026-03-11T11:06:24.985Z",
+        "completedAt": "2026-03-11T18:35:58.870Z",
+        "completed": true,
+        "receivedAt": "2026-03-10T15:50:38Z",
+        "isIntro": false
+      },
+      {
+        "id": "5980a2a6-2b8d-44c9-baf2-158295f14d34",
+        "text": "Note party event details from Lovkush Agarwal - 7pm on March 17th (one week away)",
+        "source": "email",
+        "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHFo52aAAA=",
+        "createdAt": "2026-03-11T11:06:24.985Z",
+        "completedAt": "2026-03-11T13:36:52.682Z",
+        "completed": true,
+        "receivedAt": "2026-03-10T10:26:53Z",
+        "isIntro": false
+      },
+      {
+        "id": "470fee2e-452e-43f5-9e93-2ce394d93176",
+        "text": "Sign SPONSOR AGREEMENT for The Tech Bros Ltd with Inditex (document from Fernando Mouriño via Docuten)",
+        "source": "email",
+        "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHFo52FAAA=",
+        "createdAt": "2026-03-11T11:06:24.985Z",
+        "completedAt": "2026-03-11T12:31:08.906Z",
+        "completed": true,
+        "receivedAt": "2026-03-09T12:53:56Z",
+        "isIntro": false
+      },
+      {
+        "id": "a4f317ff-39e8-4794-b17b-213dc659c44d",
+        "text": "Sign CCGG document for The Tech Bros Ltd with Inditex (document from Fernando Mouriño via Docuten)",
+        "source": "email",
+        "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHFo52DAAA=",
+        "createdAt": "2026-03-11T11:06:24.985Z",
+        "completedAt": "2026-03-11T12:32:30.630Z",
+        "completed": true,
+        "receivedAt": "2026-03-09T12:51:14Z",
+        "isIntro": false
+      },
+      {
+        "id": "cffa5116-769a-49ea-84e5-0129c0d2eb6b",
+        "text": "RSVP to IFF Women's AI Breakfast at London AI HUB from Meric Sevgi Eren",
+        "source": "email",
+        "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHFRT3XAAA=",
+        "createdAt": "2026-03-11T11:06:24.985Z",
+        "completedAt": "2026-03-11T18:47:02.579Z",
+        "completed": true,
+        "receivedAt": "2026-03-08T17:07:40Z",
+        "isIntro": false
+      },
+      {
+        "id": "60d43160-ddd5-42af-a689-e3642a5aa968",
+        "text": "Review Luma event page for 'if user == woman: ship( )' on April 11th and share to promote",
+        "source": "email",
+        "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHHCVGWAAA=",
+        "createdAt": "2026-03-11T11:20:41.749Z",
+        "completedAt": "2026-03-11T14:40:07.309Z",
+        "completed": true,
+        "receivedAt": "2026-03-11T11:19:54Z",
+        "isIntro": false
+      },
+      {
+        "id": "615678c3-2fc2-40b1-8a4e-1045a77917d0",
+        "text": "Decide on reaching out to AI tools (e.g., Cursor, Replit) for demos at April Event Collab workshop - respond to Bidisa Mukherjee",
+        "source": "email",
+        "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHFo52dAAA=",
+        "createdAt": "2026-03-11T11:20:41.749Z",
+        "completedAt": "2026-03-11T13:35:17.969Z",
+        "completed": true,
+        "receivedAt": "2026-03-10T15:43:30Z",
+        "isIntro": false
+      },
+      {
+        "id": "71942fce-1b78-4127-ad20-96886cf9e4b0",
+        "text": "Review luma event update for The Tech Bros: Pitch Night on April 16th",
+        "source": "email",
+        "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHHCVGZAAA=",
+        "createdAt": "2026-03-11T11:32:19.809Z",
+        "completedAt": "2026-03-11T14:42:27.522Z",
+        "completed": true,
+        "receivedAt": "2026-03-11T11:31:34Z",
+        "isIntro": false
+      },
+      {
+        "id": "da99b522-817c-440e-b3fd-0dd4f7e24347",
+        "text": "Share and promote luma event 'The First 90 Days of a Startup' on April 8th",
+        "source": "email",
+        "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHHCVGXAAA=",
+        "createdAt": "2026-03-11T11:32:19.809Z",
+        "completedAt": "2026-03-11T14:40:09.672Z",
+        "completed": true,
+        "receivedAt": "2026-03-11T11:28:22Z",
+        "isIntro": false
+      },
+      {
+        "id": "2fa6358d-e99d-4a84-b81f-46ba4ffb6e85",
+        "text": "Review Investor Pathways Stage 1 outcome email and determine next steps for Stage 2",
+        "source": "email",
+        "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHHCVGfAAA=",
+        "createdAt": "2026-03-11T15:14:33.648Z",
+        "completedAt": "2026-03-11T16:04:49.627Z",
+        "completed": true,
+        "receivedAt": "2026-03-11T14:48:53Z",
+        "isIntro": false
+      },
+      {
+        "id": "e537c2fe-5362-40f1-babc-9d48feae7e97",
+        "text": "Process reimbursement for Sedinam Simpson - TTB x IC FemHack catering receipts totaling £107",
+        "source": "email",
+        "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHHCVGjAAA=",
+        "createdAt": "2026-03-11T16:05:15.202Z",
+        "completedAt": "2026-03-11T16:20:01.600Z",
+        "completed": true,
+        "receivedAt": "2026-03-11T15:39:27Z",
+        "isIntro": false
+      }
+    ],
+    "2026-03-12": [
+      {
+        "id": "5f239008-bb0a-4952-9ca1-5003524dc7b0",
+        "text": "Respond to Luca Mezossy-Dona at Ionate Energy about International Women's Day help",
+        "source": "email",
+        "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAHB0ai4AAA=",
+        "createdAt": "2026-03-08T11:40:18.880Z",
+        "completedAt": "2026-03-12T12:56:56.033Z",
+        "completed": true,
+        "receivedAt": "2026-03-03T14:26:18Z"
+      },
+      {
+        "id": "0d23b43a-894d-4112-b4fe-ef519c9f4d86",
+        "text": "Follow up with Savitri Tan after meeting",
+        "source": "email",
+        "sourceId": "AQMkADhiNTRjM2I3LTNlMGQtNDQAODctYjM4Zi03M2M1NGIzNzM4OTcARgAAA9blx63wNcFNv2jcok8V25oHAH9S3MY9y8ZNiPQDpNc5_zEAAAIBDAAAAH9S3MY9y8ZNiPQDpNc5_zEAAb-LRwAAAQ==",
+        "createdAt": "2026-03-08T11:40:18.880Z",
+        "completedAt": "2026-03-12T13:01:15.231Z",
+        "completed": true,
+        "receivedAt": "2026-03-02T14:49:39Z"
+      },
+      {
+        "id": "c51814c6-5932-46b2-9995-9828b54cfb2b",
+        "text": "Respond to Marc Baiza at Vercel acknowledging conversation shift",
+        "source": "email",
+        "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAG-y0btAAA=",
+        "createdAt": "2026-03-08T11:40:18.880Z",
+        "completedAt": "2026-03-12T18:35:47.973Z",
+        "completed": true,
+        "receivedAt": "2026-03-01T19:05:29Z"
+      },
+      {
+        "id": "e32d4ffe-67ae-4442-bfeb-73f1244bc73b",
+        "text": "Reply to Frances Spooner at Marriott Harrison to schedule intro call - intro from Jess McCarten at SIE Ventures",
+        "source": "email",
+        "sourceId": "AAMkADhiNTRjM2I3LTNlMGQtNDQ4Ny1iMzhmLTczYzU0YjM3Mzg5NwBGAAAAAADW5cet8DXBTb9o3KJPFduaBwB-UtzGPcvGTYj0A6TXOfsxAAAAAAEMAAB-UtzGPcvGTYj0A6TXOfsxAAGvrfA3AAA=",
+        "createdAt": "2026-03-11T21:46:10.013Z",
+        "completedAt": "2026-03-12T18:39:31.027Z",
+        "completed": true,
+        "receivedAt": "2026-02-04T15:15:00Z",
+        "isIntro": true
+      }
+    ]
+  }
 }

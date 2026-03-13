@@ -50,6 +50,21 @@
         "Orient: Atlassian Coupa Setup",
         "Complete Atlassian Coupa Registration"
       ]
+    },
+    {
+      "id": "fead2251-53c9-4110-a0ff-9698ea764495",
+      "name": "Thursday Power Push",
+      "completedAt": "2026-03-12T18:39:33.709Z",
+      "tasksCompleted": 6,
+      "totalMinutes": 424,
+      "completedTaskTitles": [
+        "Orient: Atlassian Invoice Setup",
+        "Address Atlassian AP Ticket Issue",
+        "Reply to Luca at Ionate Energy",
+        "Follow Up with Savitri Tan",
+        "Reply to Marc Baiza at Vercel",
+        "Reply to Frances Spooner Intro"
+      ]
     }
   ]
 }
